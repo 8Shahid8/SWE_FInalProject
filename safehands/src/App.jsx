@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star } from 'lucide-react';
+import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Truck, Clock, Shield, Star } from 'lucide-react';
 import SafeHandsAuth from './components/SafeHandsAuth';
 import AdminDashboard from './components/AdminDashboard';
 import Layout from './components/Layout';
@@ -74,21 +74,11 @@ export default function App() {
   }
 
   return (
-    <Layout>
-      <div className="flex justify-center space-x-4 my-4">
-        <button
-          onClick={() => setCurrentPage('auth')}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-4 py-2 rounded-lg"
-        >
-          Login/Sign Up
-        </button>
-        <button
-          onClick={() => setCurrentPage('admin')}
-          className="bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold px-4 py-2 rounded-lg"
-        >
-          Admin
-        </button>
-      </div>
+    <Layout
+      onNavigateToHome={() => setCurrentPage('home')}
+      onNavigateToAuth={() => setCurrentPage('auth')}
+      onNavigateToAdmin={() => setCurrentPage('admin')}
+    >
       {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, User, Phone } from 'lucide-react';
+import { mockLogin, mockRegister } from '../utils/auth';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,37 +13,31 @@ export default function Login() {
     phone: '',
     address: ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setError('');
 
     if (isLogin) {
-      // Simple login - in real app, verify credentials
-      const user = {
-        email: formData.email,
-        name: formData.email.split('@')[0],
-        quarantineStatus: 'none'
-      };
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('isAuthenticated', 'true');
-      navigate('/');
+      const result = mockLogin(formData.email, formData.password);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || 'Invalid credentials');
+      }
     } else {
-      // Registration
-      const user = {
-        email: formData.email,
-        name: formData.name,
-        phone: formData.phone,
-        address: formData.address,
-        quarantineStatus: 'none',
-        createdAt: new Date().toISOString()
-      };
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('isAuthenticated', 'true');
-      navigate('/');
+      const result = mockRegister(formData);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || 'Registration failed');
+      }
     }
   };
 
@@ -62,7 +57,7 @@ export default function Login() {
         <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setIsLogin(true)}
+              onClick={() => { setIsLogin(true); setError(''); }}
               className={`flex-1 py-2 rounded-lg font-semibold transition ${
                 isLogin ? 'bg-blue-600 text-white' : 'text-gray-600'
               }`}
@@ -70,7 +65,7 @@ export default function Login() {
               Login
             </button>
             <button
-              onClick={() => setIsLogin(false)}
+              onClick={() => { setIsLogin(false); setError(''); }}
               className={`flex-1 py-2 rounded-lg font-semibold transition ${
                 !isLogin ? 'bg-blue-600 text-white' : 'text-gray-600'
               }`}
@@ -80,6 +75,7 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             {!isLogin && (
               <>
                 <div>
@@ -182,12 +178,16 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 text-center">
-              <strong>Demo:</strong> Use any email and password to {isLogin ? 'login' : 'register'}
-            </p>
-          </div>
+          {isLogin && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                <strong>Admin:</strong> admin@safehands.com / admin123
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>User:</strong> user@safehands.com / password
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

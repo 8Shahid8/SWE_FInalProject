@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Mail, Shield, Calendar, AlertCircle } from 'lucide-react';
+import { getCurrentUser } from '../utils/auth';
+import { getDB, saveDB } from '../utils/database';
 
 export default function Profile() {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = {};
+  const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    setUser(userData);
-    setFormData(userData);
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+    setFormData(currentUser);
   }, []);
 
   const handleInputChange = (e) => {
@@ -28,10 +30,16 @@ export default function Profile() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    localStorage.setItem('user', JSON.stringify(formData));
-    setUser(formData);
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+    const db = getDB();
+    const userIndex = db.users.findIndex(u => u.id === user.id);
+    if (userIndex > -1) {
+      db.users[userIndex] = { ...db.users[userIndex], ...formData };
+      saveDB(db);
+      sessionStorage.setItem('currentUser', JSON.stringify(db.users[userIndex]));
+      setUser(db.users[userIndex]);
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    }
   };
 
   const getQuarantineStatusColor = (status) => {
@@ -41,6 +49,10 @@ export default function Profile() {
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
+  if (!user || !formData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">

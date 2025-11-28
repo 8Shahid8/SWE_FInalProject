@@ -85,14 +85,14 @@ const DashboardHome = ({ setActiveTab }) => (
         <CheckCircle size={48} className="text-purple-400 opacity-50" />
       </div>
 
-      {/* New Card for Service Providers */}
+      {/* New Card for Service Providers */} 
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('providers')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Service Providers</h3>
-          <p className="text-3xl font-bold text-orange-600">6</p> {/* Mock count for now */}
+          <p className="text-3xl font-bold text-orange-600">6</p> {/* Mock count for now */} 
         </div>
         <LayoutGrid size={48} className="text-orange-400 opacity-50" />
       </div>
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
         ></div>
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-md transform ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-md transform ${ 
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } md:relative md:translate-x-0 md:w-64 transition-transform duration-200 ease-in-out`}
       >
@@ -398,4 +398,3 @@ const NavItem = ({ icon: Icon, text, activeTab, setActiveTab, tabName, toggleSid
     </li>
   );
 };
-

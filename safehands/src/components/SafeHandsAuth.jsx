@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Package, Eye, EyeOff, CheckCircle, LogIn, UserPlus, Home, Mail, Lock, User, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Eye, EyeOff, CheckCircle, Mail, Lock, User, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { mockLogin, mockRegister } from '../utils/auth';
 
-export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
+export default function SafeHandsAuth() {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState('signin'); // 'signin' or 'signup'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Sign In Form State
@@ -41,22 +45,42 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
       default: return 'bg-gray-300';
     }
   };
-
+  
   const handleSignIn = () => {
-    if (signInData.email && signInData.password) {
+    setError('');
+    const result = mockLogin(signInData.email, signInData.password);
+    if (result.success) {
       setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
+      setTimeout(() => {
+        setShowSuccessToast(false);
+        navigate('/');
+      }, 1500);
+    } else {
+      setError(result.error || 'Invalid credentials');
     }
   };
 
   const handleSignUp = () => {
-    if (signUpData.name && signUpData.email && signUpData.password &&
-        signUpData.password === signUpData.confirmPassword) {
+    setError('');
+    if (signUpData.password !== signUpData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    const result = mockRegister({
+      email: signUpData.email,
+      password: signUpData.password,
+      name: signUpData.name,
+      phone: signUpData.contactInfo,
+      address: signUpData.address
+    });
+    if (result.success) {
       setShowSuccessToast(true);
       setTimeout(() => {
         setShowSuccessToast(false);
-        setCurrentPage('signin');
-      }, 3000);
+        navigate('/');
+      }, 1500);
+    } else {
+      setError(result.error || 'Registration failed.');
     }
   };
 
@@ -64,6 +88,13 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
     setSignUpData({ ...signUpData, password: value });
     setPasswordStrength(calculatePasswordStrength(value));
   };
+
+  const handleSwitchPage = (page) => {
+    setCurrentPage(page);
+    setError('');
+    setSignInData({ email: '', password: '' });
+    setSignUpData({ name: '', email: '', contactInfo: '', address: '', password: '', confirmPassword: ''});
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">
@@ -74,53 +105,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
         <div className="absolute top-40 left-1/2 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Navigation */}
-      <nav className="relative bg-white/80 backdrop-blur-md border-b border-gray-200 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                SafeHands
-              </span>
-            </div>
 
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setAppPage('home')}
-                className="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 transition font-medium"
-              >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </button>
-              <button
-                onClick={() => setCurrentPage('signin')}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition font-medium ${
-                  currentPage === 'signin'
-                    ? 'text-indigo-600 bg-indigo-50'
-                    : 'text-gray-700 hover:text-indigo-600'
-                }`}
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Sign In</span>
-              </button>
-              <button
-                onClick={() => setCurrentPage('signup')}
-                className={`flex items-center space-x-2 px-5 py-2 rounded-lg transition font-medium shadow-md ${
-                  currentPage === 'signup'
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600'
-                }`}
-              >
-                <UserPlus className="w-4 h-4" />
-                <span>Sign Up</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Success Toast */}
       {showSuccessToast && (
@@ -156,7 +141,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                   </h1>
                   <p className="text-gray-600">Welcome back! Please enter your details.</p>
                 </div>
-
+                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
                 <div className="space-y-6">
                   {/* Email Field */}
                   <div>
@@ -228,7 +213,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                   <p className="text-center text-gray-600">
                     Don't have an account?{' '}
                     <button
-                      onClick={() => setCurrentPage('signup')}
+                      onClick={() => handleSwitchPage('signup')}
                       className="text-indigo-600 hover:text-indigo-700 font-semibold"
                     >
                       Sign up now!
@@ -245,7 +230,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                   </h1>
                   <p className="text-gray-600">Join SafeHands today and get started.</p>
                 </div>
-
+                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
                 <div className="space-y-5">
                   {/* Name Field */}
                   <div>
@@ -259,7 +244,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                         className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
-                        placeholder="Rifat"
+                        placeholder="Full Name"
                       />
                     </div>
                   </div>
@@ -276,7 +261,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                         value={signUpData.email}
                         onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                         className="w-full pl-12 pr-4 py-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
-                        placeholder="rifat123@gmail.com"
+                        placeholder="email@example.com"
                       />
                     </div>
                   </div>
@@ -309,7 +294,7 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                           value={signUpData.address}
                           onChange={(e) => setSignUpData({ ...signUpData, address: e.target.value })}
                           className="w-full pl-12 pr-4 py-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
-                          placeholder="Gendaria TSO"
+                          placeholder="Street Address, City, Postal Code"
                         />
                       </div>
                     </div>
@@ -388,14 +373,14 @@ export default function SafeHandsAuth({ setCurrentPage: setAppPage }) {
                               signUpData.password !== signUpData.confirmPassword}
                     className="w-full py-3 bg-gradient-to-r from-blue-400 to-cyan-500 text-white font-bold rounded-xl hover:from-blue-500 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
                   >
-                    Submitting
+                    Create Account
                   </button>
 
                   {/* Sign In Link */}
                   <p className="text-center text-gray-600">
                     Already a user?{' '}
                     <button
-                      onClick={() => setCurrentPage('signin')}
+                      onClick={() => handleSwitchPage('signin')}
                       className="text-indigo-600 hover:text-indigo-700 font-semibold"
                     >
                       Sign in instead!

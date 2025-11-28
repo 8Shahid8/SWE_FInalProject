@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star } from 'lucide-react';
 import SafeHandsAuth from './components/SafeHandsAuth';
 import AdminDashboard from './components/AdminDashboard';
+import Layout from './components/Layout';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home'); // 'home' or 'auth'
@@ -73,60 +74,21 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-      {/* Navigation */}
-      <nav className="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                SafeHands
-              </span>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">Dashboard</a>
-              <a href="#services" className="text-gray-700 hover:text-indigo-600 transition font-medium">Services</a>
-              <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
-              <div className="flex items-center space-x-3 pl-6 border-l border-gray-300">
-                <button
-                  onClick={() => setCurrentPage('auth')}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-4 py-2 rounded-lg"
-                >
-                  Login/Sign Up
-                </button>
-                <button
-                  onClick={() => setCurrentPage('admin')}
-                  className="bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold px-4 py-2 rounded-lg"
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
-
-            <button
-              className="md:hidden text-gray-700"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-4 py-3 space-y-3">
-              <a href="#" className="block text-gray-700 hover:text-indigo-600">Dashboard</a>
-              <a href="#services" className="block text-gray-700 hover:text-indigo-600">Services</a>
-              <a href="#" className="block text-gray-700 hover:text-indigo-600">About</a>
-            </div>
-          </div>
-        )}
-      </nav>
-
+    <Layout>
+      <div className="flex justify-center space-x-4 my-4">
+        <button
+          onClick={() => setCurrentPage('auth')}
+          className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-4 py-2 rounded-lg"
+        >
+          Login/Sign Up
+        </button>
+        <button
+          onClick={() => setCurrentPage('admin')}
+          className="bg-gradient-to-r from-green-600 to-teal-600 text-white font-bold px-4 py-2 rounded-lg"
+        >
+          Admin
+        </button>
+      </div>
       {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -334,25 +296,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold">SafeHands</span>
-          </div>
-          <p className="text-gray-400 mb-6">Your trusted partner for everyday services</p>
-          <div className="flex justify-center space-x-6 text-gray-400">
-            <a href="#" className="hover:text-white transition">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition">Terms of Service</a>
-            <a href="#" className="hover:text-white transition">Contact Us</a>
-          </div>
-          <p className="text-gray-500 mt-8">© 2025 SafeHands. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
+    </Layout>
   );
 }

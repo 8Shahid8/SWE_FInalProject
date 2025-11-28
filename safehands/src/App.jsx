@@ -312,6 +312,7 @@ export default function App() {
       onNavigateToHome={() => setCurrentPage('home')}
       onNavigateToAuth={() => setCurrentPage('auth')}
       onNavigateToAdmin={() => setCurrentPage('admin')}
+      onNavigateToContactTracing={() => setCurrentPage('contact-tracing')}
     >
       {renderPage()}
     </Layout>

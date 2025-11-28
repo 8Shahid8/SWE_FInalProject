@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Package, Menu, X } from 'lucide-react';
 
-export default function Layout({ children, currentPage, onNavigateToHome, onNavigateToAuth, onNavigateToAdmin }) {
+export default function Layout({ children, currentPage, onNavigateToHome, onNavigateToAuth, onNavigateToAdmin, onNavigateToContactTracing }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -36,6 +36,13 @@ export default function Layout({ children, currentPage, onNavigateToHome, onNavi
               >
                 Admin
               </button>
+              <button
+                onClick={() => { console.log('Contact Tracing clicked'); if (currentPage === 'home') onNavigateToContactTracing(); }}
+                className={`bg-gradient-to-r ${currentPage === 'home' ? 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700' : 'from-gray-400 to-gray-500 cursor-not-allowed'} text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
+                disabled={currentPage !== 'home'}
+              >
+                Contact Tracing
+              </button>
             </div>
 
             <button
@@ -62,6 +69,13 @@ export default function Layout({ children, currentPage, onNavigateToHome, onNavi
               disabled={currentPage !== 'home'}
             >
               Admin
+            </button>
+            <button
+              onClick={() => { console.log('Contact Tracing clicked (mobile)'); if (currentPage === 'home') onNavigateToContactTracing(); setIsMenuOpen(false); }}
+              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:bg-blue-600 ${currentPage !== 'home' ? 'cursor-not-allowed opacity-50' : ''}`}
+              disabled={currentPage !== 'home'}
+            >
+              Contact Tracing
             </button>
           </div>
         )}

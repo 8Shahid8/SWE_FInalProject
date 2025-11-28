@@ -1,577 +1,339 @@
-import React, { useState, useEffect } from 'react';
-import { Home, Droplet, Sparkles, Heart, BookOpen, ShoppingBag, AlertCircle, CheckCircle, User, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star } from 'lucide-react';
 
-// Utility functions for localStorage
-const storage = {
-  getUser: () => JSON.parse(localStorage.getItem('user') || 'null'),
-  setUser: (user) => localStorage.setItem('user', JSON.stringify(user)),
-  clearUser: () => localStorage.removeItem('user'),
-  getBookings: () => JSON.parse(localStorage.getItem('bookings') || '[]'),
-  addBooking: (booking) => {
-    const bookings = storage.getBookings();
-    bookings.push(booking);
-    localStorage.setItem('bookings', JSON.stringify(bookings));
-  },
-  getExposure: () => JSON.parse(localStorage.getItem('exposure') || 'null'),
-  setExposure: (date) => localStorage.setItem('exposure', JSON.stringify(date)),
-  clearExposure: () => localStorage.removeItem('exposure')
-};
+export default function App() {
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-// Simple Router Component
-function Router({ children }) {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-
-  useEffect(() => {
-    const handlePopState = () => setCurrentPath(window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  const navigate = (path) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
-  };
-
-  return React.Children.map(children, child =>
-    React.cloneElement(child, { currentPath, navigate })
-  );
-}
-
-function Route({ path, component: Component, currentPath, navigate }) {
-  return currentPath === path ? <Component navigate={navigate} /> : null;
-}
-
-// Header Component
-function Header({ navigate, user, onLogout }) {
-  return (
-    <header className="bg-gradient-to-r from-teal-600 via-teal-700 to-cyan-700 text-white shadow-xl">
-      <div className="container mx-auto px-4 py-5 flex justify-between items-center">
-        <button onClick={() => navigate('/')} className="flex items-center gap-3 text-2xl font-bold hover:text-teal-100 transition-all">
-          <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-            <Home size={28} />
-          </div>
-          SafeHands
-        </button>
-        <nav className="flex gap-4 items-center">
-          {user ? (
-            <>
-              <button onClick={() => navigate('/dashboard')} className="hover:text-teal-100 flex items-center gap-2 transition-all hover:scale-105">
-                <User size={18} />
-                Dashboard
-              </button>
-              <button onClick={onLogout} className="hover:text-teal-100 flex items-center gap-2 transition-all hover:scale-105">
-                <LogOut size={18} />
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => navigate('/login')} className="hover:text-teal-100 transition-all hover:scale-105">Login</button>
-              <button onClick={() => navigate('/register')} className="bg-white text-teal-700 px-5 py-2.5 rounded-lg font-semibold hover:bg-teal-50 transition-all hover:scale-105 shadow-lg">
-                Register
-              </button>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
-}
-
-// Home Page
-function HomePage({ navigate }) {
   const services = [
-    { name: 'Plumbing', icon: Droplet, color: 'bg-teal-100 text-teal-700', desc: 'Emergency repairs & maintenance' },
-    { name: 'Cleaning', icon: Sparkles, color: 'bg-cyan-100 text-cyan-700', desc: 'Professional sanitization' },
-    { name: 'Elder Care', icon: Heart, color: 'bg-emerald-100 text-emerald-700', desc: 'Compassionate caregiving' },
-    { name: 'Tutoring', icon: BookOpen, color: 'bg-sky-100 text-sky-700', desc: 'Online & in-home lessons' },
-    { name: 'Grocery Helper', icon: ShoppingBag, color: 'bg-teal-100 text-teal-700', desc: 'Contactless delivery' }
+    {
+      id: 'grocery',
+      name: 'Grocery Delivery',
+      icon: Package,
+      color: 'from-red-400 to-pink-400',
+      bgColor: 'bg-red-50',
+      description: 'Get various grocery delivery from us.'
+    },
+    {
+      id: 'medication',
+      name: 'Medication Delivery',
+      icon: Truck,
+      color: 'from-blue-400 to-indigo-400',
+      bgColor: 'bg-blue-50',
+      description: 'Any medical facility can be available from home.'
+    },
+    {
+      id: 'covid',
+      name: 'Covid 19 Testing',
+      icon: ShieldCheck,
+      color: 'from-yellow-400 to-amber-400',
+      bgColor: 'bg-yellow-50',
+      description: 'Test your covid status from professional covid testers'
+    },
+    {
+      id: 'food',
+      name: 'Food Delivery',
+      icon: Utensils,
+      color: 'from-red-400 to-rose-400',
+      bgColor: 'bg-rose-50',
+      description: 'Wanna eat? We have your back!'
+    },
+    {
+      id: 'parcel',
+      name: 'Parcel Delivery',
+      icon: MapPin,
+      color: 'from-blue-400 to-cyan-400',
+      bgColor: 'bg-blue-50',
+      description: 'Send or Receive parcel from/to anywhere in the country.'
+    }
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50">
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16">
-          <div className="inline-block bg-teal-100 text-teal-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-            🛡️ Privacy-First Platform
-          </div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            SafeHands – Privacy-First Home Services During Pandemic
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Connect with verified service providers while protecting your privacy and health with cutting-edge contact tracing technology
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-teal-700 hover:to-cyan-700 shadow-xl transform hover:scale-105 transition-all"
-          >
-            Get Started →
-          </button>
-        </div>
-
-        <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {services.map((service) => (
-            <div key={service.name} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-6 text-center transform hover:scale-105 border border-teal-100">
-              <div className={`${service.color} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md`}>
-                <service.icon size={32} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{service.name}</h3>
-              <p className="text-sm text-gray-600">{service.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-16 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-8 text-white shadow-2xl">
-          <h2 className="text-3xl font-bold mb-6">🔒 Privacy-First Approach</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="font-bold text-lg mb-2">Anonymous Tokens</h3>
-              <p className="text-sm text-teal-50">Your identity is protected with unique booking tokens</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="font-bold text-lg mb-2">Contact Tracing</h3>
-              <p className="text-sm text-teal-50">Automated exposure alerts without revealing personal data</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="font-bold text-lg mb-2">Secure Platform</h3>
-              <p className="text-sm text-teal-50">All data encrypted and handled with care</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Register Page
-function RegisterPage({ navigate }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'client'
-  });
-
   const handleSubmit = () => {
-    if (formData.name && formData.email && formData.password) {
-      storage.setUser(formData);
-      navigate('/dashboard');
+    if (selectedService && selectedDate) {
+      alert(`Service: ${services.find(s => s.id === selectedService)?.name}\nDate: ${selectedDate}`);
     }
   };
 
+  const handleServiceCardClick = (serviceId) => {
+    setSelectedService(serviceId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 flex items-center justify-center px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-teal-100">
-        <div className="text-center mb-6">
-          <div className="inline-block bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 rounded-2xl mb-4">
-            <User size={32} />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-          <p className="text-gray-600 mt-2">Join SafeHands today</p>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="john@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Role</label>
-            <div className="flex gap-4">
-              <label className="flex-1 cursor-pointer">
-                <input
-                  type="radio"
-                  value="client"
-                  checked={formData.role === 'client'}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
-                  className="sr-only"
-                />
-                <div className={`border-2 rounded-xl p-4 text-center transition-all ${formData.role === 'client' ? 'border-teal-600 bg-teal-50 text-teal-700' : 'border-gray-200 hover:border-teal-300'}`}>
-                  <p className="font-semibold">Client</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+      {/* Navigation */}
+      <nav className="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                SafeHands
+              </span>
+            </div>
+
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">Dashboard</a>
+              <a href="#services" className="text-gray-700 hover:text-indigo-600 transition font-medium">Services</a>
+              <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
+              <div className="flex items-center space-x-3 pl-6 border-l border-gray-300">
+                <span className="text-sm text-gray-600">Howdy, Rifat!</span>
+                <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-md">
+                  <span className="text-white font-semibold text-sm">R</span>
                 </div>
-              </label>
-              <label className="flex-1 cursor-pointer">
-                <input
-                  type="radio"
-                  value="provider"
-                  checked={formData.role === 'provider'}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
-                  className="sr-only"
-                />
-                <div className={`border-2 rounded-xl p-4 text-center transition-all ${formData.role === 'provider' ? 'border-teal-600 bg-teal-50 text-teal-700' : 'border-gray-200 hover:border-teal-300'}`}>
-                  <p className="font-semibold">Service Provider</p>
-                </div>
-              </label>
-            </div>
-          </div>
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            Register
-          </button>
-        </div>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <button onClick={() => navigate('/login')} className="text-teal-600 hover:text-teal-700 font-semibold hover:underline">
-            Login
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Login Page
-function LoginPage({ navigate }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = () => {
-    const user = storage.getUser();
-    if (user && user.email === email && user.password === password) {
-      navigate('/dashboard');
-    } else {
-      alert('Invalid credentials. Please register first.');
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 flex items-center justify-center px-4 py-12">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border border-teal-100">
-        <div className="text-center mb-6">
-          <div className="inline-block bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 rounded-2xl mb-4">
-            <User size={32} />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-600 mt-2">Login to your SafeHands account</p>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="john@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              placeholder="••••••••"
-            />
-          </div>
-          <button className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline">Forgot password?</button>
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-3 rounded-xl font-semibold hover:from-teal-700 hover:to-cyan-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            Login
-          </button>
-        </div>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <button onClick={() => navigate('/register')} className="text-teal-600 hover:text-teal-700 font-semibold hover:underline">
-            Register
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// Dashboard Page
-function DashboardPage({ navigate }) {
-  const user = storage.getUser();
-  const exposure = storage.getExposure();
-  const [isAvailable, setIsAvailable] = useState(false);
-
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
-  const handleReportPositive = () => {
-    const exposureDate = new Date();
-    storage.setExposure(exposureDate.toISOString());
-    navigate('/exposure');
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-teal-100">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-4 rounded-2xl">
-              <User size={32} />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">Howdy, {user.name}! 👋</h1>
-              <p className="text-gray-600 mt-1">
-                Role: <span className="font-semibold capitalize text-teal-700">{user.role}</span>
-              </p>
-            </div>
-          </div>
-
-          {user.role === 'client' ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => navigate('/book')}
-                className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-5 rounded-xl font-semibold hover:from-teal-700 hover:to-cyan-700 transition-all text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                📅 Book a Service
-              </button>
-
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200">
-                <h3 className="font-bold text-gray-900 mb-4 text-xl flex items-center gap-2">
-                  <BookOpen size={24} className="text-teal-600" />
-                  Your Bookings
-                </h3>
-                {storage.getBookings().length === 0 ? (
-                  <p className="text-gray-600 text-center py-6">No bookings yet. Book your first service!</p>
-                ) : (
-                  <div className="space-y-3">
-                    {storage.getBookings().map((booking, idx) => (
-                      <div key={idx} className="bg-white p-5 rounded-xl border-2 border-teal-100 hover:border-teal-300 transition-all shadow-sm">
-                        <p className="font-bold text-lg text-gray-900">{booking.service}</p>
-                        <p className="text-sm text-gray-600 mt-1">📅 Date: {booking.date}</p>
-                        <p className="text-sm text-teal-700 font-mono mt-2 bg-teal-50 px-3 py-1 rounded inline-block">
-                          🎫 Token: {booking.token}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-6 border border-teal-200">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isAvailable}
-                    onChange={(e) => setIsAvailable(e.target.checked)}
-                    className="w-6 h-6 text-teal-600 rounded focus:ring-teal-500"
-                  />
-                  <span className="text-lg font-semibold text-gray-900">Mark as Available for Work</span>
-                </label>
-                {isAvailable && (
-                  <p className="mt-3 text-teal-700 flex items-center gap-2 bg-teal-100 px-4 py-2 rounded-lg">
-                    <CheckCircle size={20} />
-                    You are now visible to clients
-                  </p>
-                )}
-              </div>
-
-              <button
-                onClick={handleReportPositive}
-                className="w-full bg-gradient-to-r from-red-600 to-rose-600 text-white py-5 rounded-xl font-semibold hover:from-red-700 hover:to-rose-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                🦠 Report Positive COVID-19 Test
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Book Service Page
-function BookServicePage({ navigate }) {
-  const user = storage.getUser();
-  const [service, setService] = useState('');
-  const [date, setDate] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const [token, setToken] = useState('');
-
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
-  const services = ['Plumbing', 'Cleaning', 'Elder Care', 'Tutoring', 'Grocery Helper'];
-
-  const handleSubmit = () => {
-    if (service && date) {
-      const newToken = `TKN-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-      const booking = { service, date, token: newToken, timestamp: new Date().toISOString() };
-      storage.addBooking(booking);
-      setToken(newToken);
-      setShowToast(true);
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 3000);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-teal-100">
-          <div className="text-center mb-6">
-            <div className="inline-block bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-3 rounded-2xl mb-4">
-              <BookOpen size={32} />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900">Book a Service</h2>
-            <p className="text-gray-600 mt-2">Schedule your appointment</p>
-          </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Service Type</label>
-              <select
-                value={service}
-                onChange={(e) => setService(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all bg-white"
-              >
-                <option value="">Select a service...</option>
-                {services.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              />
             </div>
 
             <button
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 text-white py-4 rounded-xl font-semibold hover:from-teal-700 hover:to-cyan-700 transition-all text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="md:hidden text-gray-700"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              Book Now
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
 
-        {showToast && (
-          <div className="fixed bottom-8 right-8 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
-            <CheckCircle size={28} />
-            <div>
-              <p className="font-bold text-lg">Booking Confirmed!</p>
-              <p className="text-sm text-emerald-50">Token: {token}</p>
+        {isMenuOpen && (
+          <div className="md:hidden bg-white border-t border-gray-200">
+            <div className="px-4 py-3 space-y-3">
+              <a href="#" className="block text-gray-700 hover:text-indigo-600">Dashboard</a>
+              <a href="#services" className="block text-gray-700 hover:text-indigo-600">Services</a>
+              <a href="#" className="block text-gray-700 hover:text-indigo-600">About</a>
             </div>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
+      </nav>
 
-// Exposure Alert Page
-function ExposureAlertPage({ navigate }) {
-  const exposure = storage.getExposure();
-  const quarantineEnd = exposure ? new Date(new Date(exposure).getTime() + 5 * 24 * 60 * 60 * 1000) : null;
+      {/* Hero Section */}
+      <div className="relative pt-20 pb-16 px-4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob [animation-delay:2s]"></div>
+          <div className="absolute top-40 left-40 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob [animation-delay:4s]"></div>
+        </div>
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="bg-red-50 border-2 border-red-600 rounded-xl p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <AlertCircle size={48} className="text-red-600" />
-            <h1 className="text-3xl font-bold text-red-900">⚠️ Exposure Alert</h1>
-          </div>
-
-          <div className="bg-white rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">You've been exposed to COVID-19</h2>
-            <p className="text-gray-700 mb-4">
-              Based on contact tracing, you may have been exposed to someone who tested positive for COVID-19.
-            </p>
-            <p className="text-lg font-semibold text-red-900">
-              You are in quarantine until: <span className="text-red-600">{quarantineEnd?.toLocaleDateString()}</span>
-            </p>
-          </div>
-
-          <div className="bg-yellow-50 border border-yellow-400 rounded-lg p-4 mb-6">
-            <p className="text-yellow-900 font-semibold">🚫 Bookings are disabled during quarantine</p>
-            <p className="text-yellow-800 text-sm mt-2">
-              All existing bookings have been notified. You can resume services after your quarantine period ends.
+        <div className="relative max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4">
+              <span className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-full text-sm font-semibold">
+                Your Daily Essentials, Delivered with Care
+              </span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-tight">
+              Welcome to
+              <span className="block bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                SafeHands
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto mb-12">
+              Discover amazing features and services that await you. Your trusted partner for everyday convenience.
             </p>
           </div>
 
-          <div className="space-y-3 text-gray-700">
-            <h3 className="font-bold text-gray-900">What to do:</h3>
-            <ul className="list-disc list-inside space-y-2 ml-4">
-              <li>Stay home and monitor your symptoms</li>
-              <li>Get tested for COVID-19</li>
-              <li>Contact your healthcare provider if symptoms develop</li>
-              <li>Notify close contacts</li>
-            </ul>
-          </div>
+          {/* Service Selection Card */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200 p-8 md:p-12">
+              <div>
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {/* Service Dropdown */}
+                  <div className="relative">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Choose a Service
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        className="w-full px-5 py-4 text-left bg-gray-50 border-2 border-gray-200 rounded-2xl hover:border-indigo-400 focus:border-indigo-500 focus:outline-none transition-all duration-200 flex items-center justify-between group"
+                      >
+                        <span className={selectedService ? 'text-gray-900 font-medium' : 'text-gray-400'}>
+                          {selectedService
+                            ? services.find(s => s.id === selectedService)?.name
+                            : 'Choose a Service'}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
 
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Return to Dashboard
-          </button>
+                      {dropdownOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+                          {services.map((service) => {
+                            const Icon = service.icon;
+                            return (
+                              <button
+                                key={service.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedService(service.id);
+                                  setDropdownOpen(false);
+                                }}
+                                className="w-full px-5 py-4 flex items-center space-x-4 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 group"
+                              >
+                                <div className={`w-12 h-12 bg-gradient-to-br ${service.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-md`}>
+                                  <Icon className="w-6 h-6 text-white" />
+                                </div>
+                                <span className="text-gray-800 font-medium group-hover:text-indigo-600">
+                                  {service.name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Date Picker */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Select Date
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        placeholder="mm/dd/yyyy"
+                        className="w-full pl-12 pr-5 py-4 bg-gray-50 border-2 border-gray-200 rounded-2xl hover:border-indigo-400 focus:border-indigo-500 focus:outline-none transition-all duration-200 text-gray-700"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSubmit}
+                  disabled={!selectedService || !selectedDate}
+                  className="w-full py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-2xl hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
+                >
+                  <span>Book Service</span>
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
 
-// Main App Component
-export default function App() {
-  const [user, setUser] = useState(storage.getUser());
+      {/* Services Grid Section */}
+      <div id="services" className="py-16 px-4 bg-white/40">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
+            <p className="text-lg text-gray-600">Choose from our wide range of convenient services</p>
+          </div>
 
-  const handleLogout = () => {
-    storage.clearUser();
-    setUser(null);
-    window.history.pushState({}, '', '/');
-    window.location.reload();
-  };
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service) => {
+              const Icon = service.icon;
+              return (
+                <div
+                  key={service.id}
+                  onClick={() => handleServiceCardClick(service.id)}
+                  className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer group"
+                >
+                  <div className={`w-20 h-20 ${service.bgColor} rounded-full flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-16 h-16 bg-gradient-to-br ${service.color} rounded-full flex items-center justify-center shadow-lg`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 text-center mb-3">
+                    {service.name}
+                  </h3>
+                  <p className="text-gray-600 text-center leading-relaxed">
+                    {service.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Router>
-        <Header navigate={(path) => {}} user={user} onLogout={handleLogout} />
-        <Route path="/" component={HomePage} />
-        <Route path="/register" component={RegisterPage} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/dashboard" component={DashboardPage} />
-        <Route path="/book" component={BookServicePage} />
-        <Route path="/exposure" component={ExposureAlertPage} />
-      </Router>
+      {/* Why Choose Us Section */}
+      <div className="py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Choose SafeHands?</h2>
+            <p className="text-lg text-gray-600">We're committed to providing the best service experience</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Fast Delivery',
+                desc: 'Lightning-fast service at your doorstep. Get your essentials delivered in minutes, not hours.',
+                icon: Clock,
+                gradient: 'from-blue-500 to-cyan-500'
+              },
+              {
+                title: 'Secure & Safe',
+                desc: 'Your safety is our priority. Contactless delivery options and verified service providers.',
+                icon: Shield,
+                gradient: 'from-green-500 to-emerald-500'
+              },
+              {
+                title: 'Trusted Quality',
+                desc: 'Rated 4.8/5 by thousands of happy customers. Excellence in every delivery.',
+                icon: Star,
+                gradient: 'from-yellow-500 to-orange-500'
+              }
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <div key={idx} className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="py-16 px-4 bg-gradient-to-r from-indigo-600 to-purple-600">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 text-center text-white">
+            {[
+              { number: '50K+', label: 'Happy Customers' },
+              { number: '100K+', label: 'Deliveries Made' },
+              { number: '500+', label: 'Service Partners' },
+              { number: '4.8/5', label: 'Average Rating' }
+            ].map((stat, idx) => (
+              <div key={idx} className="p-6">
+                <div className="text-5xl font-bold mb-2">{stat.number}</div>
+                <div className="text-lg text-indigo-100">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold">SafeHands</span>
+          </div>
+          <p className="text-gray-400 mb-6">Your trusted partner for everyday services</p>
+          <div className="flex justify-center space-x-6 text-gray-400">
+            <a href="#" className="hover:text-white transition">Privacy Policy</a>
+            <a href="#" className="hover:text-white transition">Terms of Service</a>
+            <a href="#" className="hover:text-white transition">Contact Us</a>
+          </div>
+          <p className="text-gray-500 mt-8">© 2025 SafeHands. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -5,11 +5,11 @@ import ServiceProviderManagement from './ServiceProviderManagement'; // Import t
 // Mock User Data
 const mockUsers = [
   { id: '1', name: 'Alice Smith', email: 'alice.smith@example.com', role: 'Admin', status: 'Active' },
-  { id: '2', name: 'Bob Johnson', email: 'bob.johnson@example.com', role: 'Editor', status: 'Active' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie.brown@example.com', role: 'Viewer', status: 'Inactive' },
+  { id: '2', name: 'Bob Johnson', email: 'bob.johnson@example.com', role: 'Service Provider', status: 'Active' },
+  { id: '3', name: 'Charlie Brown', email: 'charlie.brown@example.com', role: 'User', status: 'Inactive' },
   { id: '4', name: 'Diana Prince', email: 'diana.prince@example.com', role: 'Admin', status: 'Active' },
-  { id: '5', name: 'Eve Adams', email: 'eve.adams@example.com', role: 'Viewer', status: 'Active' },
-  { id: '6', name: 'Frank White', email: 'frank.white@example.com', role: 'Editor', status: 'Suspended' },
+  { id: '5', name: 'Eve Adams', email: 'eve.adams@example.com', role: 'User', status: 'Active' },
+  { id: '6', name: 'Frank White', email: 'frank.white@example.com', role: 'Service Provider', status: 'Suspended' },
 ];
 
 // Mock Service Request Data

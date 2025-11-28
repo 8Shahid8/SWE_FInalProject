@@ -18,7 +18,7 @@ import PetCare from './components/PetCare';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Layout>
         <Routes>
           {/* Public Routes */}

@@ -48,7 +48,7 @@ export default function SafeHandsAuth() {
   
   const handleSignIn = async () => {
     setError('');
-    const result = await mockLogin(signInData.email, signInData.password);
+    const result = await mockLogin(signInData.email.trim(), signInData.password.trim());
     if (result.success) {
       setShowSuccessToast(true);
       setTimeout(() => {
@@ -67,11 +67,11 @@ export default function SafeHandsAuth() {
       return;
     }
     const result = await mockRegister({
-      email: signUpData.email,
-      password: signUpData.password,
-      name: signUpData.name,
-      phone: signUpData.contactInfo,
-      address: signUpData.address
+      email: signUpData.email.trim(),
+      password: signUpData.password.trim(),
+      name: signUpData.name.trim(),
+      phone: signUpData.contactInfo.trim(),
+      address: signUpData.address.trim()
     });
     if (result.success) {
       setShowSuccessToast(true);
@@ -428,35 +428,7 @@ export default function SafeHandsAuth() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        @keyframes slide-up {
-          from {
-            transform: translate(-50%, 100px);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
+
     </div>
   );
 }

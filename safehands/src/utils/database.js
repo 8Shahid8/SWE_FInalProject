@@ -2,7 +2,7 @@
 
 // Sample data to make the app feel real
 const initialDB = {
-  version: 2, // <-- Version number for the database structure
+  version: 3, // <-- Version number for the database structure
   users: [
     {
       id: 1,

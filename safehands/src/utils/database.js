@@ -48,8 +48,15 @@ export const saveDB = (db) => {
 // Call this function once when your app loads (e.g., in main.jsx)
 export const seedDatabase = () => {
   const currentDB = getDB();
+  console.log('--- Database Seeding Check ---');
+  console.log('Current DB Version:', currentDB?.version);
+  console.log('Initial DB Version:', initialDB.version);
+
   if (!currentDB || currentDB.version < initialDB.version) {
-    console.log('Seeding database with new version...');
+    console.log('DECISION: Seeding database with new version...');
     saveDB(initialDB);
+  } else {
+    console.log('DECISION: Database is up to date. No seeding required.');
   }
+  console.log('-----------------------------');
 };

@@ -14,18 +14,29 @@ const securePasswordHash = async (password) => {
 };
 
 export const mockLogin = async (email, password) => {
+  console.log('--- Login Attempt ---');
+  console.log('Attempting to log in with Email:', email);
+  
   const db = getDB();
   // Hash the entered password to compare it with the stored hash
   const passwordHash = await securePasswordHash(password);
+  console.log('Generated Hash from input password:', passwordHash);
+
+  console.log('Searching in Users:', db.users);
 
   const user = db.users.find(
     (u) => u.email === email && u.passwordHash === passwordHash
   );
 
   if (user) {
+    console.log('SUCCESS: User found!', user);
+    console.log('---------------------');
     sessionStorage.setItem('currentUser', JSON.stringify(user));
     return { success: true, user };
   }
+  
+  console.log('FAILURE: User not found with matching email and password hash.');
+  console.log('---------------------');
   return { success: false, error: 'Invalid credentials' };
 };
 

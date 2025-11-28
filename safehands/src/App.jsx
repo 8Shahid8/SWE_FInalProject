@@ -1,65 +1,12 @@
 import React, { useState } from 'react';
 import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star } from 'lucide-react';
+import SafeHandsAuth from './components/SafeHandsAuth';
 
 export default function App() {
-  const [selectedService, setSelectedService] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const services = [
-    {
-      id: 'grocery',
-      name: 'Grocery Delivery',
-      icon: Package,
-      color: 'from-red-400 to-pink-400',
-      bgColor: 'bg-red-50',
-      description: 'Get various grocery delivery from us.'
-    },
-    {
-      id: 'medication',
-      name: 'Medication Delivery',
-      icon: Truck,
-      color: 'from-blue-400 to-indigo-400',
-      bgColor: 'bg-blue-50',
-      description: 'Any medical facility can be available from home.'
-    },
-    {
-      id: 'covid',
-      name: 'Covid 19 Testing',
-      icon: ShieldCheck,
-      color: 'from-yellow-400 to-amber-400',
-      bgColor: 'bg-yellow-50',
-      description: 'Test your covid status from professional covid testers'
-    },
-    {
-      id: 'food',
-      name: 'Food Delivery',
-      icon: Utensils,
-      color: 'from-red-400 to-rose-400',
-      bgColor: 'bg-rose-50',
-      description: 'Wanna eat? We have your back!'
-    },
-    {
-      id: 'parcel',
-      name: 'Parcel Delivery',
-      icon: MapPin,
-      color: 'from-blue-400 to-cyan-400',
-      bgColor: 'bg-blue-50',
-      description: 'Send or Receive parcel from/to anywhere in the country.'
-    }
-  ];
-
-  const handleSubmit = () => {
-    if (selectedService && selectedDate) {
-      alert(`Service: ${services.find(s => s.id === selectedService)?.name}\nDate: ${selectedDate}`);
-    }
-  };
-
-  const handleServiceCardClick = (serviceId) => {
-    setSelectedService(serviceId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' or 'auth'
+  if (currentPage === 'auth') {
+    return <SafeHandsAuth setCurrentPage={setCurrentPage} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
@@ -81,10 +28,12 @@ export default function App() {
               <a href="#services" className="text-gray-700 hover:text-indigo-600 transition font-medium">Services</a>
               <a href="#" className="text-gray-700 hover:text-indigo-600 transition font-medium">About</a>
               <div className="flex items-center space-x-3 pl-6 border-l border-gray-300">
-                <span className="text-sm text-gray-600">Howdy, Rifat!</span>
-                <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-white font-semibold text-sm">R</span>
-                </div>
+                <button
+                  onClick={() => setCurrentPage('auth')}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-4 py-2 rounded-lg"
+                >
+                  Login/Sign Up
+                </button>
               </div>
             </div>
 

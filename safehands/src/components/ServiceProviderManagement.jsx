@@ -35,29 +35,29 @@ export default function ServiceProviderManagement() {
         <h2 className="text-2xl font-bold">Service Provider Management</h2>
         <button
           onClick={handleAddProvider}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
+          className="bg-indigo-600 text-white sm:px-3 sm:py-1 lg:px-4 lg:py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
         >
           <PlusCircle size={18} />
           <span>Add New Provider</span>
         </button>
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Service Type
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Contact
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Status
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Actions
               </th>
             </tr>
@@ -65,21 +65,21 @@ export default function ServiceProviderManagement() {
           <tbody className="bg-white divide-y divide-gray-200">
             {providers.map((provider) => (
               <tr key={provider.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900 truncate">
                   {provider.name}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {provider.serviceType}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {provider.contact}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${provider.status === 'Active' ? 'bg-green-100 text-green-800' : provider.status === 'Inactive' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {provider.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleView(provider)}
                     className="text-indigo-600 hover:text-indigo-900 mr-3"

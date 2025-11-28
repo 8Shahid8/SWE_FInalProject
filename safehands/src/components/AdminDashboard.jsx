@@ -35,7 +35,7 @@ const DashboardHome = ({ setActiveTab }) => (
     <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('users')}
       >
         <div>
@@ -45,7 +45,7 @@ const DashboardHome = ({ setActiveTab }) => (
         <Users size={48} className="text-indigo-400 opacity-50" />
       </div>
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('users')} // Navigate to users tab for Active Users details
       >
         <div>
@@ -55,7 +55,7 @@ const DashboardHome = ({ setActiveTab }) => (
         <Users size={48} className="text-green-400 opacity-50" />
       </div>
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('requests')} // Navigate to requests tab for Total Requests details
       >
         <div>
@@ -65,7 +65,7 @@ const DashboardHome = ({ setActiveTab }) => (
         <Briefcase size={48} className="text-blue-400 opacity-50" />
       </div>
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('requests')} // Navigate to requests tab for Pending Requests details
       >
         <div>
@@ -75,7 +75,7 @@ const DashboardHome = ({ setActiveTab }) => (
         <Clock size={48} className="text-yellow-400 opacity-50" />
       </div>
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('requests')} // Navigate to requests tab for Completed Requests details
       >
         <div>
@@ -87,7 +87,7 @@ const DashboardHome = ({ setActiveTab }) => (
 
       {/* New Card for Service Providers */}
       <div
-        className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
+        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('providers')}
       >
         <div>
@@ -122,7 +122,7 @@ const UserManagement = () => {
         <h2 className="text-2xl font-bold">User Management</h2>
         <button
           onClick={handleAddUser}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
+          className="bg-indigo-600 text-white sm:px-3 sm:py-1 lg:px-4 lg:py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
         >
           <PlusCircle size={18} />
           <span>Add New User</span>
@@ -132,19 +132,19 @@ const UserManagement = () => {
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Name
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
                 Email
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
                 Role
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
                 Status
               </th>
-              <th scope="col" className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Actions
               </th>
             </tr>
@@ -152,16 +152,16 @@ const UserManagement = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {mockUsers.map((user) => (
               <tr key={user.id}>
-                <td className="px-3 py-4 text-sm font-medium text-gray-900">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900">
                   {user.name}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500 truncate">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {user.email}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500">
                   {user.role}
                 </td>
-                <td className="px-3 py-4 text-sm">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
                     user.status === 'Active' ? 'bg-green-100 text-green-800' :
                     user.status === 'Inactive' ? 'bg-red-100 text-red-800' :
@@ -170,7 +170,7 @@ const UserManagement = () => {
                     {user.status}
                   </span>
                 </td>
-                <td className="px-3 py-4 text-right text-sm font-medium">
+                <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleView(user)}
                     className="text-indigo-600 hover:text-indigo-900 mr-3"
@@ -220,7 +220,7 @@ const ServiceRequest = () => {
         <h2 className="text-2xl font-bold">Service Requests</h2>
         <button
           onClick={handleAddRequest}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
+          className="bg-indigo-600 text-white sm:px-3 sm:py-1 lg:px-4 lg:py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
         >
           <PlusCircle size={18} />
           <span>Add New Request</span>
@@ -230,22 +230,22 @@ const ServiceRequest = () => {
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                 Request ID
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Service Type
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 User
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Request Date
               </th>
-              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Status
               </th>
-              <th scope="col" className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                 Actions
               </th>
             </tr>
@@ -253,19 +253,19 @@ const ServiceRequest = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {requests.map((request) => (
               <tr key={request.id}>
-                <td className="px-3 py-4 text-sm font-medium text-gray-900">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900">
                   {request.id}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500 truncate">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {request.serviceType}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500 truncate">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {request.userName}
                 </td>
-                <td className="px-3 py-4 text-sm text-gray-500">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500">
                   {request.requestDate}
                 </td>
-                <td className="px-3 py-4 text-sm">
+                <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
                     request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                     request.status === 'Completed' ? 'bg-green-100 text-green-800' :
@@ -275,7 +275,7 @@ const ServiceRequest = () => {
                     {request.status}
                   </span>
                 </td>
-                <td className="px-3 py-4 text-right text-sm font-medium">
+                <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleViewDetails(request)}
                     className="text-indigo-600 hover:text-indigo-900 mr-3"

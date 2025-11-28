@@ -23,23 +23,20 @@ export default function Layout({ children, currentPage, onNavigateToHome, onNavi
             
             <div className="hidden md:flex items-center space-x-3 relative z-20">
               <button
-                onClick={() => { console.log('Login/Sign Up clicked'); if (currentPage === 'home') onNavigateToAuth(); }}
-                className={`bg-gradient-to-r ${currentPage === 'home' ? 'from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700' : 'from-gray-400 to-gray-500 cursor-not-allowed'} text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
-                disabled={currentPage !== 'home'}
+                onClick={() => { console.log('Login/Sign Up clicked'); onNavigateToAuth(); }}
+                className={`bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
               >
                 Login/Sign Up
               </button>
               <button
-                onClick={() => { console.log('Admin clicked'); if (currentPage === 'home') onNavigateToAdmin(); }}
-                className={`bg-gradient-to-r ${currentPage === 'home' ? 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'from-gray-400 to-gray-500 cursor-not-allowed'} text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
-                disabled={currentPage !== 'home'}
+                onClick={() => { console.log('Admin clicked'); onNavigateToAdmin(); }}
+                className={`bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
               >
                 Admin
               </button>
               <button
-                onClick={() => { console.log('Contact Tracing clicked'); if (currentPage === 'home') onNavigateToContactTracing(); }}
-                className={`bg-gradient-to-r ${currentPage === 'home' ? 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700' : 'from-gray-400 to-gray-500 cursor-not-allowed'} text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
-                disabled={currentPage !== 'home'}
+                onClick={() => { console.log('Contact Tracing clicked'); onNavigateToContactTracing(); }}
+                className={`bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200`}
               >
                 Contact Tracing
               </button>
@@ -57,23 +54,20 @@ export default function Layout({ children, currentPage, onNavigateToHome, onNavi
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 py-3 px-4 space-y-2 relative z-10">
             <button
-              onClick={() => { console.log('Login/Sign Up clicked (mobile)'); if (currentPage === 'home') onNavigateToAuth(); setIsMenuOpen(false); }}
-              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 ${currentPage !== 'home' ? 'cursor-not-allowed opacity-50' : ''}`}
-              disabled={currentPage !== 'home'}
+              onClick={() => { console.log('Login/Sign Up clicked (mobile)'); onNavigateToAuth(); setIsMenuOpen(false); }}
+              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-600`}
             >
               Login/Sign Up
             </button>
             <button
-              onClick={() => { console.log('Admin clicked (mobile)'); if (currentPage === 'home') onNavigateToAdmin(); setIsMenuOpen(false); }}
-              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600 ${currentPage !== 'home' ? 'cursor-not-allowed opacity-50' : ''}`}
-              disabled={currentPage !== 'home'}
+              onClick={() => { console.log('Admin clicked (mobile)'); onNavigateToAdmin(); setIsMenuOpen(false); }}
+              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600`}
             >
               Admin
             </button>
             <button
-              onClick={() => { console.log('Contact Tracing clicked (mobile)'); if (currentPage === 'home') onNavigateToContactTracing(); setIsMenuOpen(false); }}
-              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:bg-blue-600 ${currentPage !== 'home' ? 'cursor-not-allowed opacity-50' : ''}`}
-              disabled={currentPage !== 'home'}
+              onClick={() => { console.log('Contact Tracing clicked (mobile)'); onNavigateToContactTracing(); setIsMenuOpen(false); }}
+              className={`w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:bg-blue-600`}
             >
               Contact Tracing
             </button>

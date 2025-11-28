@@ -1,9 +1,9 @@
 // safehands/src/components/ProtectedRoute.jsx
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { getCurrentUser, isAdmin } from '../utils/auth';
+import { getCurrentUser } from '../utils/auth';
 
-const ProtectedRoute = ({ adminOnly = false }) => {
+const ProtectedRoute = ({ roles }) => {
   const currentUser = getCurrentUser();
 
   // 1. If no user is logged in, redirect to login
@@ -11,8 +11,8 @@ const ProtectedRoute = ({ adminOnly = false }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // 2. If the route is for admins only and the user is not an admin, redirect
-  if (adminOnly && !isAdmin()) {
+  // 2. If roles are required, check if the user has one of the required roles
+  if (roles && roles.length > 0 && !roles.includes(currentUser.role)) {
     return <Navigate to="/" replace />; // Or to an "Unauthorized" page
   }
 

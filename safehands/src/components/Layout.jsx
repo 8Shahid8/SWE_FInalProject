@@ -62,6 +62,14 @@ export default function Layout({ children }) {
                   Admin
                 </Link>
               )}
+              {user && user.role === 'service-provider' && (
+                <Link
+                  to="/provider-dashboard"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
+                >
+                  Provider Dashboard
+                </Link>
+              )}
               <Link
                 to="/contact-tracing"
                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
@@ -113,6 +121,15 @@ export default function Layout({ children }) {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Admin
+              </Link>
+            )}
+            {user && user.role === 'service-provider' && (
+              <Link
+                to="/provider-dashboard"
+                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Provider Dashboard
               </Link>
             )}
             <Link

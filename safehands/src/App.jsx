@@ -12,6 +12,7 @@ import MedicationDelivery from './components/MedicationDelivery';
 import Covid19Testing from './components/Covid19Testing';
 import HomeCleaning from './components/HomeCleaning';
 import LaundryService from './components/LaundryService';
+import ServiceProviderDashboard from './pages/ServiceProviderDashboard';
 import PetCare from './components/PetCare';
 
 
@@ -38,8 +39,13 @@ function App() {
             {/* Add other user routes here */}
           </Route>
 
-          {/* Protected Routes for ADMINS ONLY */}
-          <Route element={<ProtectedRoute adminOnly={true} />}>
+          {/* Protected Route for Service Providers */}
+          <Route element={<ProtectedRoute roles={['service-provider']} />}>
+            <Route path="/provider-dashboard" element={<ServiceProviderDashboard />} />
+          </Route>
+
+          {/* Protected Route for ADMINS ONLY */}
+          <Route element={<ProtectedRoute roles={['admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
         </Routes>

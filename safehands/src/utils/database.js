@@ -17,6 +17,13 @@ const initialDB = {
       role: 'admin',
       covidStatus: 'negative',
     },
+    {
+      id: 3,
+      email: 'provider@safehands.com',
+      passwordHash: 'e6f3a7434c8922c2069772373333a8d16d41470562e847a984572287f7a26f63', // "provider123"
+      role: 'service-provider',
+      covidStatus: 'negative',
+    },
   ],
   bookings: [
     { id: 1, userId: 1, service: 'Grocery Delivery', date: '2025-12-10' },

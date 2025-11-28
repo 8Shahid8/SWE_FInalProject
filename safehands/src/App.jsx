@@ -79,7 +79,7 @@ export default function App() {
       {currentPage === 'admin' ? (
         <AdminDashboard />
       ) : (
-        <>
+        <div>
           {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -287,6 +287,8 @@ export default function App() {
           </div>
         </div>
       </div>
+        </div>
+      )}
     </Layout>
   );
 }

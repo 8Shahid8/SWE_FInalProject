@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star } from 'lucide-react';
+import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star, Shirt, Sparkles } from 'lucide-react';
 import SafeHandsAuth from './components/SafeHandsAuth';
 import Layout from './components/Layout';
 import AdminDashboard from './components/AdminDashboard';
-import GroceryDelivery from './components/GroceryDelivery';
-import ParcelDelivery from './components/ParcelDelivery';
+import DeliveryServices from './components/DeliveryServices';
+import HomeCleaning from './components/HomeCleaning';
+import LaundryService from './components/LaundryService';
 import ContactTracing from './components/ContactTracing';
 import MedicationDelivery from './components/MedicationDelivery';
 import Covid19Testing from './components/Covid19Testing';
-import FoodDelivery from './components/FoodDelivery';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'auth', 'admin', 'grocery', 'medication', 'covid', 'food', 'parcel'
+  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'auth', 'admin', 'delivery-services', 'medication', 'covid', 'home-cleaning', 'laundry'
   const [selectedService, setSelectedService] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -19,12 +19,12 @@ export default function App() {
 
   const services = [
     {
-      id: 'grocery',
-      name: 'Grocery Delivery',
+      id: 'delivery-services',
+      name: 'Delivery Services',
       icon: Package,
       color: 'from-red-400 to-pink-400',
       bgColor: 'bg-red-50',
-      description: 'Get various grocery delivery from us.'
+      description: 'Groceries, food, and parcels delivered to your door.'
     },
     {
       id: 'medication',
@@ -43,20 +43,20 @@ export default function App() {
       description: 'Test your covid status from professional covid testers'
     },
     {
-      id: 'food',
-      name: 'Food Delivery',
-      icon: Utensils,
-      color: 'from-red-400 to-rose-400',
-      bgColor: 'bg-rose-50',
-      description: 'Wanna eat? We have your back!'
+      id: 'home-cleaning',
+      name: 'Home Cleaning',
+      icon: Sparkles,
+      color: 'from-green-400 to-teal-400',
+      bgColor: 'bg-green-50',
+      description: 'Professional home cleaning services.'
     },
     {
-      id: 'parcel',
-      name: 'Parcel Delivery',
-      icon: MapPin,
-      color: 'from-blue-400 to-cyan-400',
-      bgColor: 'bg-blue-50',
-      description: 'Send or Receive parcel from/to anywhere in the country.'
+      id: 'laundry',
+      name: 'Laundry Service',
+      icon: Shirt,
+      color: 'from-purple-400 to-indigo-400',
+      bgColor: 'bg-purple-50',
+      description: 'Convenient laundry and dry cleaning services.'
     }
   ];
 
@@ -78,18 +78,18 @@ export default function App() {
     switch (currentPage) {
       case 'admin':
         return <AdminDashboard />;
-      case 'grocery':
-        return <GroceryDelivery />;
-      case 'parcel':
-        return <ParcelDelivery />;
+      case 'delivery-services':
+        return <DeliveryServices />;
+      case 'home-cleaning':
+        return <HomeCleaning />;
+      case 'laundry':
+        return <LaundryService />;
       case 'contact-tracing':
         return <ContactTracing />;
       case 'medication':
         return <MedicationDelivery />;
       case 'covid':
         return <Covid19Testing />;
-      case 'food':
-        return <FoodDelivery />;
       case 'home':
       default:
         return (

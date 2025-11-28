@@ -69,10 +69,6 @@ export default function App() {
     return <SafeHandsAuth setCurrentPage={setCurrentPage} />;
   }
 
-  if (currentPage === 'admin') {
-    return <AdminDashboard />;
-  }
-
   return (
     <Layout
       currentPage={currentPage}
@@ -80,7 +76,11 @@ export default function App() {
       onNavigateToAuth={() => setCurrentPage('auth')}
       onNavigateToAdmin={() => setCurrentPage('admin')}
     >
-      {/* Hero Section */}
+      {currentPage === 'admin' ? (
+        <AdminDashboard />
+      ) : (
+        <>
+          {/* Hero Section */}
       <div className="relative pt-20 pb-16 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>

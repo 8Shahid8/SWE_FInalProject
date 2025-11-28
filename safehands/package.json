@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://ashraf-rsp.github.io/SWE_FInalProject",
+  "homepage": "https://8shahid8.github.io/SWE_FInalProject",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

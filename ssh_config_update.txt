@@ -1,0 +1,6 @@
+# Config for 8Shahid8 project account
+Host github.com-shahid
+  HostName github.com
+  User git
+  IdentityFile "C:\Users\Ashraf Mahmud\.ssh\id_ed25519_shahid"
+  IdentitiesOnly yes

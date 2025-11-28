@@ -1,0 +1,170 @@
+Hello!
+
+You've asked for guidance on setting up a new GitHub account ("8Shahid8") for your project, ensuring that your personal information is not visible in the project's commits. This guide will walk you through the necessary steps.
+
+---
+
+**New GitHub Account Details:**
+*   **Username:** 8Shahid8
+*   **Email:** shahid35-377@diu.edu.bd
+*   **Suggested SSH Key Name:** id_ed25519_shahid
+*   **Suggested SSH Host Alias:** github.com-shahid
+
+---
+
+**Step 1: Generate a new SSH key for 8Shahid8**
+
+This step creates a unique SSH key pair (a pair of keys: a private key and a public key) for your new GitHub account.
+
+1.  **Open your terminal (PowerShell, Git Bash, or CMD).**
+2.  **Run the following command:**
+    ```bash
+    ssh-keygen -t ed25519 -C "shahid35-377@diu.edu.bd" -f "%USERPROFILE%\.ssh\id_ed25519_shahid"
+    ```
+    *   `-t ed25519`: Specifies the encryption algorithm.
+    *   `-C "shahid35-377@diu.edu.bd"`: Adds a comment to the public key, usually the email associated with the account.
+    *   `-f "%USERPROFILE%\.ssh\id_ed25519_shahid"`: Specifies the file path and name for your new SSH key. It will be saved in your `.ssh` directory.
+
+3.  **When prompted:**
+    *   `Enter passphrase (empty for no passphrase):` It's highly recommended to enter a strong passphrase for security. Remember this passphrase!
+    *   `Enter same passphrase again:` Re-enter your passphrase.
+
+After this, two files will be created in `C:\Users\YourUsername\.ssh\`:
+*   `id_ed25519_shahid` (your private key)
+*   `id_ed25519_shahid.pub` (your public key)
+
+---
+
+**Step 2: Add the new SSH key to your SSH agent**
+
+The SSH agent manages your SSH keys and passphrases, so you don't have to enter your passphrase every time you use the key.
+
+1.  **Start the SSH agent (if not already running):**
+    ```bash
+    eval "$(ssh-agent -s)"
+    ```
+    *(Note: On some systems, `ssh-agent` might already be running. If you get a message like "Agent pid XXXX", it's already active.)*
+
+2.  **Add your new private key to the agent:**
+    ```bash
+    ssh-add "%USERPROFILE%\.ssh\id_ed25519_shahid"
+    ```
+    If you set a passphrase, you will be prompted to enter it now.
+
+---
+
+**Step 3: Add the new public key to your GitHub account ("8Shahid8")**
+
+You need to tell GitHub about your new public key so it can authenticate you using it.
+
+1.  **Copy your public key to your clipboard:**
+    ```bash
+    Get-Content "%USERPROFILE%\.ssh\id_ed25519_shahid.pub" | Set-Clipboard
+    ```
+    *(This command uses PowerShell to read the public key file and put its content into your clipboard.)*
+
+2.  **Go to GitHub.com and log in to the "8Shahid8" account.**
+3.  **Navigate to Settings:** Click your profile picture (top right), then select "Settings".
+4.  **Go to "SSH and GPG keys":** In the left sidebar, click "SSH and GPG keys".
+5.  **Click "New SSH key"** or "Add SSH key".
+6.  **Provide a Title:** Give your key a descriptive name (e.g., "Project Assignment Key" or "8Shahid8 Key").
+7.  **Paste the Key:** Paste the content you copied from your clipboard into the "Key" field.
+8.  **Click "Add SSH key".**
+
+---
+
+**Step 4: Configure your SSH client for the new GitHub account**
+
+This step tells your computer to use the correct SSH key when interacting with GitHub for your project.
+
+1.  **Open your `.ssh/config` file:**
+    ```bash
+    notepad "%USERPROFILE%\.ssh\config"
+    ```
+    *(If the file doesn't exist, Notepad will ask if you want to create it. Click Yes.)*
+
+2.  **Add the following block to the end of the `config` file:**
+    ```
+    # Config for 8Shahid8 project account
+    Host github.com-shahid
+      HostName github.com
+      User git
+      IdentityFile "%USERPROFILE%\.ssh\id_ed25519_shahid"
+      IdentitiesOnly yes
+    ```
+    *   `Host github.com-shahid`: This is the alias you'll use in your Git remote URLs.
+    *   `HostName github.com`: The actual GitHub domain.
+    *   `User git`: The standard SSH user for GitHub.
+    *   `IdentityFile ...`: Points to your new private key.
+    *   `IdentitiesOnly yes`: Ensures only this specific key is used for this host.
+
+3.  **Save and close the `config` file.**
+
+---
+
+**Step 5: Configure your local Git repository for the new project**
+
+This final step ensures that your commits are attributed to the "8Shahid8" account and that Git uses the correct SSH configuration when pushing/pulling.
+
+1.  **Navigate to your project's root directory in the terminal:**
+    *(Replace `E:\2025\CyberSec\SWE\Final Project\safehands` with the actual path to your project folder.)*
+    ```bash
+    cd "E:\2025\CyberSec\SWE\Final Project\safehands"
+    ```
+
+2.  **Set the local Git user name and email for this specific project:**
+    *(This will override any global Git configurations for this project only.)*
+    ```bash
+    git config user.name "8Shahid8"
+    git config user.email "shahid35-377@diu.edu.bd"
+    ```
+
+3.  **Update the remote URL of your Git repository:**
+    *(This tells Git to use the `github.com-shahid` host alias you configured in your `.ssh/config` file.)*
+    ```bash
+    git remote set-url origin git@github.com-shahid:8Shahid8/SWE_FInalProject.git
+    ```
+    *   **Important**: Replace `8Shahid8/SWE_FInalProject.git` with the actual path to *your new project's repository* on GitHub, under the "8Shahid8" account.
+
+---
+
+**Verification (Optional but Recommended):**
+
+You can test your SSH connection to the new GitHub host alias:
+```bash
+ssh -T git@github.com-shahid
+```
+You should see a message like: `Hi 8Shahid8! You've successfully authenticated...`
+
+You can also check the local Git configuration for your project:
+```bash
+git config --list
+```
+This should show `user.name=8Shahid8` and `user.email=shahid35-377@diu.edu.bd`.
+
+---
+
+Let me know if you have any questions after following these steps!
+
+
+
+ ssh-keygen -t ed25519 -C "shahid35-377@diu.edu.bd" -f "$HOME\\.ssh\\id_ed25519_shahid"
+Generating public/private ed25519 key pair.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in C:\Users\Ashraf Mahmud\\.ssh\\id_ed25519_shahid
+Your public key has been saved in C:\Users\Ashraf Mahmud\\.ssh\\id_ed25519_shahid.pub
+The key fingerprint is:
+SHA256:rwTOCEzUOMN9Ii6Nhh0rUPgK3r+Xcx1UrcZLmnteeos shahid35-377@diu.edu.bd
+The key's randomart image is:
++--[ED25519 256]--+
+| +o+          .  |
+|o.B + .      . . |
+|o*.* o      o .  |
+|*+*        . =   |
+|+++   . S . = .  |
+|.. o + . . + .   |
+|    o o o o o  . |
+|     . = o o .+. |
+|     .o +   oE...|
++----[SHA256]-----+

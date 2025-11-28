@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Users, Briefcase, Bell, Eye, Edit, PlusCircle, CheckSquare, XSquare, CheckCircle, Clock, LayoutGrid } from 'lucide-react';
+import { Home, Users, Briefcase, Bell, Eye, Edit, PlusCircle, CheckSquare, XSquare, CheckCircle, Clock, LayoutGrid, Menu } from 'lucide-react';
 import ServiceProviderManagement from './ServiceProviderManagement'; // Import the new component
 
 // Mock User Data
@@ -85,14 +85,14 @@ const DashboardHome = ({ setActiveTab }) => (
         <CheckCircle size={48} className="text-purple-400 opacity-50" />
       </div>
 
-      {/* New Card for Service Providers */} 
+      {/* New Card for Service Providers */}
       <div
         className="bg-white p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('providers')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Service Providers</h3>
-          <p className="text-3xl font-bold text-orange-600">6</p> {/* Mock count for now */} 
+          <p className="text-3xl font-bold text-orange-600">6</p> {/* Mock count for now */}
         </div>
         <LayoutGrid size={48} className="text-orange-400 opacity-50" />
       </div>
@@ -129,22 +129,22 @@ const UserManagement = () => {
         </button>
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
                 Email
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
                 Role
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
                 Status
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Actions
               </th>
             </tr>
@@ -152,25 +152,25 @@ const UserManagement = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {mockUsers.map((user) => (
               <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-3 py-4 text-sm font-medium text-gray-900">
                   {user.name}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-sm text-gray-500 truncate">
                   {user.email}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-sm text-gray-500">
                   {user.role}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className="px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
                     user.status === 'Active' ? 'bg-green-100 text-green-800' :
                     user.status === 'Inactive' ? 'bg-red-100 text-red-800' :
                     'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  }`}> 
                     {user.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleView(user)}
                     className="text-indigo-600 hover:text-indigo-900 mr-3"
@@ -227,25 +227,25 @@ const ServiceRequest = () => {
         </button>
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                 Request ID
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 Service Type
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
                 User
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Request Date
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
                 Status
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                 Actions
               </th>
             </tr>
@@ -253,29 +253,29 @@ const ServiceRequest = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {requests.map((request) => (
               <tr key={request.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-3 py-4 text-sm font-medium text-gray-900">
                   {request.id}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-sm text-gray-500 truncate">
                   {request.serviceType}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-sm text-gray-500 truncate">
                   {request.userName}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-sm text-gray-500">
                   {request.requestDate}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className="px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
                     request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                     request.status === 'Completed' ? 'bg-green-100 text-green-800' :
                     request.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
                     'bg-gray-100 text-gray-800'
-                  }`}>
+                  }`}> 
                     {request.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleViewDetails(request)}
                     className="text-indigo-600 hover:text-indigo-900 mr-3"
@@ -313,6 +313,11 @@ const ServiceRequest = () => {
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar visibility
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -331,47 +336,36 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <aside className="w-64 bg-white shadow-md">
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-md transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:relative md:translate-x-0 md:w-64 transition-transform duration-200 ease-in-out`}
+      >
         <div className="p-6">
           <h1 className="text-2xl font-bold text-indigo-600">Admin</h1>
         </div>
         <nav>
           <ul>
-            <li
-              className={`p-4 cursor-pointer flex items-center ${activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-              onClick={() => setActiveTab('home')}
-            >
-              <Home className="mr-3" />
-              Dashboard
-            </li>
-            <li
-              className={`p-4 cursor-pointer flex items-center ${activeTab === 'users' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-              onClick={() => setActiveTab('users')}
-            >
-              <Users className="mr-3" />
-              Users
-            </li>
-            <li
-              className={`p-4 cursor-pointer flex items-center ${activeTab === 'requests' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-              onClick={() => setActiveTab('requests')}
-            >
-              <Briefcase className="mr-3" />
-              Service Requests
-            </li>
-            {/* New Nav Item for Service Providers */}
-            <li
-              className={`p-4 cursor-pointer flex items-center ${activeTab === 'providers' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-              onClick={() => setActiveTab('providers')}
-            >
-              <LayoutGrid className="mr-3" />
-              Service Providers
-            </li>
+            <NavItem icon={Home} text="Dashboard" activeTab={activeTab} setActiveTab={setActiveTab} tabName="home" toggleSidebar={toggleSidebar} />
+            <NavItem icon={Users} text="Users" activeTab={activeTab} setActiveTab={setActiveTab} tabName="users" toggleSidebar={toggleSidebar} />
+            <NavItem icon={Briefcase} text="Service Requests" activeTab={activeTab} setActiveTab={setActiveTab} tabName="requests" toggleSidebar={toggleSidebar} />
+            <NavItem icon={LayoutGrid} text="Service Providers" activeTab={activeTab} setActiveTab={setActiveTab} tabName="providers" toggleSidebar={toggleSidebar} />
           </ul>
         </nav>
       </aside>
-      <main className="flex-1 p-6">
+      <main className={`flex-1 p-6 ${isSidebarOpen ? 'hidden' : 'block'}`}>
         <header className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
+          <button className="md:hidden p-2" onClick={toggleSidebar}>
+            <Menu size={24} />
+          </button>
           <div className="flex items-center space-x-4">
             <Bell />
             <div>
@@ -385,3 +379,23 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+const NavItem = ({ icon: Icon, text, activeTab, setActiveTab, tabName, toggleSidebar }) => {
+  const handleClick = () => {
+    setActiveTab(tabName);
+    // Only close sidebar on mobile after clicking an item
+    if (window.innerWidth < 768) { // Assuming 768px is the 'md' breakpoint
+      toggleSidebar();
+    }
+  };
+  return (
+    <li
+      className={`p-4 cursor-pointer flex items-center ${activeTab === tabName ? 'bg-indigo-100 text-indigo-600' : ''}`}
+      onClick={handleClick}
+    >
+      {Icon && <Icon className="mr-3" />}
+      {text}
+    </li>
+  );
+};
+

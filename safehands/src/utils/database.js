@@ -2,6 +2,7 @@
 
 // Sample data to make the app feel real
 const initialDB = {
+  version: 2, // <-- Version number for the database structure
   users: [
     {
       id: 1,
@@ -46,8 +47,9 @@ export const saveDB = (db) => {
 
 // Call this function once when your app loads (e.g., in main.jsx)
 export const seedDatabase = () => {
-  if (!getDB()) {
-    console.log('Seeding database with initial data...');
+  const currentDB = getDB();
+  if (!currentDB || currentDB.version < initialDB.version) {
+    console.log('Seeding database with new version...');
     saveDB(initialDB);
   }
 };

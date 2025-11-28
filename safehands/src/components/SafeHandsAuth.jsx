@@ -46,9 +46,9 @@ export default function SafeHandsAuth() {
     }
   };
   
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
     setError('');
-    const result = mockLogin(signInData.email, signInData.password);
+    const result = await mockLogin(signInData.email, signInData.password);
     if (result.success) {
       setShowSuccessToast(true);
       setTimeout(() => {
@@ -60,13 +60,13 @@ export default function SafeHandsAuth() {
     }
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setError('');
     if (signUpData.password !== signUpData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
-    const result = mockRegister({
+    const result = await mockRegister({
       email: signUpData.email,
       password: signUpData.password,
       name: signUpData.name,
@@ -241,6 +241,8 @@ export default function SafeHandsAuth() {
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="text"
+                        name="name"
+                        autoComplete="name"
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                         className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
@@ -258,6 +260,8 @@ export default function SafeHandsAuth() {
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="email"
+                        name="email"
+                        autoComplete="email"
                         value={signUpData.email}
                         onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                         className="w-full pl-12 pr-4 py-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
@@ -276,6 +280,8 @@ export default function SafeHandsAuth() {
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="tel"
+                          name="tel"
+                          autoComplete="tel"
                           value={signUpData.contactInfo}
                           onChange={(e) => setSignUpData({ ...signUpData, contactInfo: e.target.value })}
                           className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
@@ -291,6 +297,8 @@ export default function SafeHandsAuth() {
                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="text"
+                          name="street-address"
+                          autoComplete="street-address"
                           value={signUpData.address}
                           onChange={(e) => setSignUpData({ ...signUpData, address: e.target.value })}
                           className="w-full pl-12 pr-4 py-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
@@ -309,6 +317,8 @@ export default function SafeHandsAuth() {
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type={showPassword ? 'text' : 'password'}
+                        name="new-password"
+                        autoComplete="new-password"
                         value={signUpData.password}
                         onChange={(e) => handlePasswordChange(e.target.value)}
                         className="w-full pl-12 pr-12 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
@@ -351,6 +361,8 @@ export default function SafeHandsAuth() {
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type={showConfirmPassword ? 'text' : 'password'}
+                        name="new-password-confirmation"
+                        autoComplete="new-password"
                         value={signUpData.confirmPassword}
                         onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                         className="w-full pl-12 pr-12 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"

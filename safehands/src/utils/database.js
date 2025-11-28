@@ -6,16 +6,14 @@ const initialDB = {
     {
       id: 1,
       email: 'user@safehands.com',
-      // This is 'password' encoded with our fake hash
-      passwordHash: 'cGFzc3dvcmRzYWZlaGFuZHNJbml0aWFsU2FsdA==',
+      passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // "password"
       role: 'user',
       covidStatus: 'negative',
     },
     {
       id: 2,
       email: 'admin@safehands.com',
-      // This is 'admin123' encoded with our fake hash
-      passwordHash: 'YWRtaW4xMjNzYWZlaGFuZHNJbml0aWFsU2FsdA==',
+      passwordHash: '3a34027438218423e84915b225739e1b5850654be8e05c865778018a164b2848', // "admin123"
       role: 'admin',
       covidStatus: 'negative',
     },

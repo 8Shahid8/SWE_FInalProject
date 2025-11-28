@@ -1,33 +1,38 @@
 // safehands/src/utils/auth.js
 import { getDB, saveDB } from './database';
 
-// This is our FAKE hashing function for the demo.
-// It uses Base64 to make it look like a hash.
-const simulatePasswordHash = (password) => {
-  // In a real app, this would be a slow, strong hashing algorithm like bcrypt.
-  // We use btoa (Base64) which is NOT secure, but demonstrates the principle.
-  return btoa(password + 'safehandsInitialSalt');
+// A real cryptographic hashing function using the browser's built-in Crypto API
+const securePasswordHash = async (password) => {
+  const encoder = new TextEncoder();
+  // A "pepper" is a secret value added to the password before hashing.
+  const data = encoder.encode(password + 'a-strong-pepper-for-safehands'); 
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  // Convert the buffer to a hex string for easy storage
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
 };
 
-export const mockLogin = (email, password) => {
+export const mockLogin = async (email, password) => {
   const db = getDB();
-  const passwordHash = simulatePasswordHash(password);
+  // Hash the entered password to compare it with the stored hash
+  const passwordHash = await securePasswordHash(password);
 
   const user = db.users.find(
     (u) => u.email === email && u.passwordHash === passwordHash
   );
 
   if (user) {
-    // On successful login, save user to sessionStorage
     sessionStorage.setItem('currentUser', JSON.stringify(user));
     return { success: true, user };
   }
   return { success: false, error: 'Invalid credentials' };
 };
 
-export const mockRegister = (userData) => {
+export const mockRegister = async (userData) => {
   const db = getDB();
-  const passwordHash = simulatePasswordHash(userData.password);
+  // Await the result of the secure hashing function
+  const passwordHash = await securePasswordHash(userData.password);
 
   const existingUser = db.users.find(u => u.email === userData.email);
   if (existingUser) {
@@ -37,7 +42,7 @@ export const mockRegister = (userData) => {
   const newUser = {
     id: Date.now(),
     email: userData.email,
-    passwordHash,
+    passwordHash, // Store the new secure hash
     name: userData.name,
     phone: userData.phone,
     address: userData.address,
@@ -51,6 +56,7 @@ export const mockRegister = (userData) => {
   sessionStorage.setItem('currentUser', JSON.stringify(newUser));
   return { success: true, user: newUser };
 };
+
 
 export const logout = () => {
   sessionStorage.removeItem('currentUser');

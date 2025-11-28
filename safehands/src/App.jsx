@@ -75,6 +75,7 @@ export default function App() {
 
   return (
     <Layout
+      currentPage={currentPage}
       onNavigateToHome={() => setCurrentPage('home')}
       onNavigateToAuth={() => setCurrentPage('auth')}
       onNavigateToAdmin={() => setCurrentPage('admin')}

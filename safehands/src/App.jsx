@@ -4,6 +4,65 @@ import SafeHandsAuth from './components/SafeHandsAuth';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home'); // 'home' or 'auth'
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const services = [
+    {
+      id: 'grocery',
+      name: 'Grocery Delivery',
+      icon: Package,
+      color: 'from-red-400 to-pink-400',
+      bgColor: 'bg-red-50',
+      description: 'Get various grocery delivery from us.'
+    },
+    {
+      id: 'medication',
+      name: 'Medication Delivery',
+      icon: Truck,
+      color: 'from-blue-400 to-indigo-400',
+      bgColor: 'bg-blue-50',
+      description: 'Any medical facility can be available from home.'
+    },
+    {
+      id: 'covid',
+      name: 'Covid 19 Testing',
+      icon: ShieldCheck,
+      color: 'from-yellow-400 to-amber-400',
+      bgColor: 'bg-yellow-50',
+      description: 'Test your covid status from professional covid testers'
+    },
+    {
+      id: 'food',
+      name: 'Food Delivery',
+      icon: Utensils,
+      color: 'from-red-400 to-rose-400',
+      bgColor: 'bg-rose-50',
+      description: 'Wanna eat? We have your back!'
+    },
+    {
+      id: 'parcel',
+      name: 'Parcel Delivery',
+      icon: MapPin,
+      color: 'from-blue-400 to-cyan-400',
+      bgColor: 'bg-blue-50',
+      description: 'Send or Receive parcel from/to anywhere in the country.'
+    }
+  ];
+
+  const handleSubmit = () => {
+    if (selectedService && selectedDate) {
+      alert(`Service: ${services.find(s => s.id === selectedService)?.name}\nDate: ${selectedDate}`);
+    }
+  };
+
+  const handleServiceCardClick = (serviceId) => {
+    setSelectedService(serviceId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
   if (currentPage === 'auth') {
     return <SafeHandsAuth setCurrentPage={setCurrentPage} />;
   }

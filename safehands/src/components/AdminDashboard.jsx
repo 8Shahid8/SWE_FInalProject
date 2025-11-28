@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Home, Users, Briefcase, Bell } from 'lucide-react';
-import Layout from './Layout';
 
 // Placeholder components for the different sections
 const DashboardHome = () => (
@@ -58,52 +57,50 @@ export default function AdminDashboard() {
   };
 
   return (
-    <Layout>
-      <div className="flex min-h-screen bg-gray-100">
-        <aside className="w-64 bg-white shadow-md">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-indigo-600">Admin</h1>
-          </div>
-          <nav>
-            <ul>
-              <li
-                className={`p-4 cursor-pointer flex items-center ${activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-                onClick={() => setActiveTab('home')}
-              >
-                <Home className="mr-3" />
-                Dashboard
-              </li>
-              <li
-                className={`p-4 cursor-pointer flex items-center ${activeTab === 'users' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-                onClick={() => setActiveTab('users')}
-              >
-                <Users className="mr-3" />
-                Users
-              </li>
-              <li
-                className={`p-4 cursor-pointer flex items-center ${activeTab === 'requests' ? 'bg-indigo-100 text-indigo-600' : ''}`}
-                onClick={() => setActiveTab('requests')}
-              >
-                <Briefcase className="mr-3" />
-                Service Requests
-              </li>
-            </ul>
-          </nav>
-        </aside>
-        <main className="flex-1 p-6">
-          <header className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <Bell />
-              <div>
-                <p className="font-semibold">Admin User</p>
-                <p className="text-sm text-gray-500">admin@safehands.com</p>
-              </div>
+    <div className="flex min-h-screen bg-gray-100">
+      <aside className="w-64 bg-white shadow-md">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold text-indigo-600">Admin</h1>
+        </div>
+        <nav>
+          <ul>
+            <li
+              className={`p-4 cursor-pointer flex items-center ${activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : ''}`}
+              onClick={() => setActiveTab('home')}
+            >
+              <Home className="mr-3" />
+              Dashboard
+            </li>
+            <li
+              className={`p-4 cursor-pointer flex items-center ${activeTab === 'users' ? 'bg-indigo-100 text-indigo-600' : ''}`}
+              onClick={() => setActiveTab('users')}
+            >
+              <Users className="mr-3" />
+              Users
+            </li>
+            <li
+              className={`p-4 cursor-pointer flex items-center ${activeTab === 'requests' ? 'bg-indigo-100 text-indigo-600' : ''}`}
+              onClick={() => setActiveTab('requests')}
+            >
+              <Briefcase className="mr-3" />
+              Service Requests
+            </li>
+          </ul>
+        </nav>
+      </aside>
+      <main className="flex-1 p-6">
+        <header className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div className="flex items-center space-x-4">
+            <Bell />
+            <div>
+              <p className="font-semibold">Admin User</p>
+              <p className="text-sm text-gray-500">admin@safehands.com</p>
             </div>
-          </header>
-          {renderContent()}
-        </main>
-      </div>
-    </Layout>
+          </div>
+        </header>
+        {renderContent()}
+      </main>
+    </div>
   );
 }

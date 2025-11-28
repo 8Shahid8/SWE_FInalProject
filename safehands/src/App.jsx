@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star, Shirt, Sparkles } from 'lucide-react';
+import { ChevronDown, Package, Pill, ShieldCheck, Utensils, MapPin, Calendar, ArrowRight, Menu, X, Truck, Clock, Shield, Star, Shirt, Sparkles, PawPrint } from 'lucide-react';
 import SafeHandsAuth from './components/SafeHandsAuth';
 import Layout from './components/Layout';
 import AdminDashboard from './components/AdminDashboard';
@@ -9,9 +9,10 @@ import LaundryService from './components/LaundryService';
 import ContactTracing from './components/ContactTracing';
 import MedicationDelivery from './components/MedicationDelivery';
 import Covid19Testing from './components/Covid19Testing';
+import PetCare from './components/PetCare';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'auth', 'admin', 'delivery-services', 'medication', 'covid', 'home-cleaning', 'laundry'
+  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'auth', 'admin', 'delivery-services', 'medication', 'covid', 'home-cleaning', 'laundry', 'pet-care'
   const [selectedService, setSelectedService] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -57,6 +58,14 @@ export default function App() {
       color: 'from-purple-400 to-indigo-400',
       bgColor: 'bg-purple-50',
       description: 'Convenient laundry and dry cleaning services.'
+    },
+    {
+      id: 'pet-care',
+      name: 'Pet Care Services',
+      icon: PawPrint,
+      color: 'from-orange-400 to-amber-400',
+      bgColor: 'bg-orange-50',
+      description: 'Reliable and caring services for your beloved pets.'
     }
   ];
 
@@ -84,6 +93,8 @@ export default function App() {
         return <HomeCleaning />;
       case 'laundry':
         return <LaundryService />;
+      case 'pet-care':
+        return <PetCare />;
       case 'contact-tracing':
         return <ContactTracing />;
       case 'medication':

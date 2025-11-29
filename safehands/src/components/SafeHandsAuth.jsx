@@ -309,7 +309,7 @@ export default function SafeHandsAuth() {
                         name="new-password"
                         autoComplete="new-password"
                         value={signUpData.password}
-                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        onChange={(e) => handlePasswordChange(e)} // Pass event object
                         className="w-full pl-12 pr-12 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
                         placeholder="Enter your password"
                       />

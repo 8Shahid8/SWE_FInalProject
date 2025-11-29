@@ -1,97 +1,102 @@
-# Future Backend Transformation Plan: Leveraging Firebase
+# Future Backend Transformation Plan: Aligning with Academic Requirements
 
 ## Executive Summary
 
-The application is currently running successfully on GitHub Pages, utilizing Firebase Authentication for user management and Firestore for basic user profile storage. This document outlines a strategic plan to evolve the application's "backend" functionalities, enhancing security, control, and service management capabilities, all within a Firebase-centric, serverless architecture.
+The application currently runs on GitHub Pages with Firebase Authentication and basic Firestore profile storage. This document outlines a strategic plan to implement the **core academic requirements** of the project, focusing on privacy-by-design, contact tracing, and quarantine enforcement within a Firebase-centric, serverless architecture.
 
 ## Core Backend Philosophy
 
-Our approach will continue to leverage Firebase as a Backend-as-a-Service (BaaS). This minimizes server-side code complexity, provides inherent scalability, and utilizes managed services for security and data persistence. Key Firebase services include:
--   **Firebase Authentication:** For secure user identity management.
--   **Cloud Firestore:** For flexible and scalable real-time data storage.
--   **Firebase Cloud Functions:** For executing secure server-side logic in response to events (e.g., database writes, authentication events, HTTP requests).
--   **Firestore Security Rules:** For fine-grained, declarative access control to data.
-
-## Key Functional Areas & Proposed Solutions
-
-### 3.1 Role-Based Access Control (RBAC) - Enhanced View and Control
-
-**Current State:** Basic roles (`user`, `admin`, `service-provider`) are stored in Firestore user documents, enforced client-side via `ProtectedRoute.jsx` and conditional rendering in `Layout.jsx`.
-
-**Future Transformation:** Implement robust server-side enforcement of RBAC.
-
--   **Actions:**
-    -   **Firestore Security Rules:** Refine existing rules to explicitly define read, write, and delete permissions for different roles on various Firestore collections (e.g., only `admin` can read all user profiles; `service-provider` can only read/write their assigned tasks).
-    -   **Firebase Cloud Functions for Sensitive Actions:** Implement Cloud Functions for any critical operations (e.g., changing user roles, suspending accounts, approving critical requests). These functions will verify the caller's role (using Firebase Auth `idToken` claims) before executing the action. This prevents unauthorized actions even if client-side checks are bypassed.
-    -   **Firebase Auth Custom Claims:** For roles that require frequent, high-performance checks (e.g., `admin`, `service-provider`), consider storing the primary role as a custom claim in the Firebase Authentication user token. This allows client-side code to quickly access the role without additional Firestore reads, with server-side functions still verifying.
-
-### 3.2 Admin Dashboard Transformation
-
-**Current State:** Fetches all users and bookings (mocked) from Firestore and displays them. Basic overview.
-
-**Future Transformation:** Develop a comprehensive management interface for administrators.
-
--   **Actions:**
-    -   **User Management:**
-        -   Implement UI for editing user details (name, address, phone).
-        -   Add functionality to change user roles (e.g., `user` to `service-provider`), disable/enable user accounts (using Firebase Auth Admin SDK via Cloud Functions), or delete user data (requiring Cloud Function validation).
-        -   Display user activity logs (e.g., last login, service requests made).
-    -   **Service Request Management:**
-        -   Implement UI to view, filter, and manage all service requests (bookings).
-        -   Add actions to approve, reject, assign service requests to specific `service-provider`s, updating corresponding Firestore documents.
-    -   **Analytics & Reporting:**
-        -   Display key metrics (e.g., number of active users, total service requests, pending requests, service provider workload) by querying Firestore.
-        -   (Advanced) Integrate with Firebase Analytics for user behavior insights.
-    -   **Notifications:** Implement functionality to send in-app or push notifications to users/providers based on actions (e.g., "Your booking is confirmed").
-
-### 3.3 All Services Transformation (Bookings & Specific Services)
-
-**Current State:** Placeholder service pages (`DeliveryServices`, `MedicationDelivery`, etc.) with basic interaction. `getFirestoreBookings` is available.
-
-**Future Transformation:** Implement full end-to-end service request and fulfillment workflows.
-
--   **Actions:**
-    -   **Service Request Forms:** Implement detailed forms for users to request each service (e.g., specific grocery lists, medication details, home cleaning preferences). Data saved to specific Firestore collections (e.g., `groceryOrders`, `medicationRequests`).
-    -   **Service Provider Assignment:** Implement logic for assigning service requests to available `service-provider`s (manual by admin, or automated via Cloud Function logic).
-    -   **Provider View of Assigned Tasks:** Develop a dedicated UI for `service-provider`s to view their assigned tasks, update task status (e.g., `pending` -> `in-progress` -> `completed`), and communicate with users.
-    -   **User View of Order Status:** Implement UI for users to track the real-time status of their requested services.
-    -   **Completion Workflow:** Define and implement a clear workflow for service completion, including user confirmation and potentially ratings/reviews.
-
-### 3.4 Assignment-Specific Security Feature Integration
-
-**Current State:** Firebase Authentication for secure user logins; Firestore Security Rules for basic access control.
-
-**Future Transformation:** Deepen security, focusing on auditable and tamper-resistant operations.
-
--   **Actions:**
-    -   **Audit Trails for Critical Actions:**
-        -   Implement Firebase Cloud Functions to log every significant user action (e.g., service request submission, status change, profile update) to an immutable audit log collection in Firestore.
-        -   Log includes: `userId`, `actionType`, `timestamp`, `details` (e.g., old/new values).
-    -   **Digital Signature Addition (Conceptual/Demonstrable):**
-        -   For critical actions like "service completion confirmation" by a user or "delivery receipt" by a provider, explore client-side cryptographic hashing (using `SubtleCrypto` API for SHA-256/SHA-512) of a unique transaction ID + user ID + timestamp.
-        -   This hash could be stored alongside the transaction as a "digital fingerprint" to demonstrate data integrity. Verification would involve re-hashing the same data and comparing. (Note: This is not a true digital signature based on public/private key pairs without external services, but a demonstrable integrity check).
-    -   **Two-Factor Authentication (2FA):** Integrate Firebase Authentication's built-in 2FA capabilities (e.g., SMS verification, TOTP apps) for enhanced account security, especially for `admin` and `service-provider` roles.
-    -   **Data Validation and Sanitization:** Beyond client-side checks, enforce strict data validation via Firestore Security Rules and within Firebase Cloud Functions to prevent malicious or malformed data from entering the database.
-    -   **Abuse Prevention:** Implement rate-limiting for critical endpoints (e.g., login attempts, service requests) using Cloud Functions.
-
-### 3.5 Scalability & Performance
-
--   **Actions:**
-    -   **Firestore Indexing:** Optimize Firestore performance by creating composite indexes for frequently used queries.
-    -   **Real-time Listeners:** Utilize Firestore's real-time capabilities (`onSnapshot`) for dashboards and user tracking where immediate updates are critical (e.g., tracking service request status).
-    -   **Cloud Functions for Complex Queries/Aggregations:** Offload computationally intensive tasks or complex data aggregations to Cloud Functions to keep client-side operations fast.
-
-### 3.6 Deployment & Monitoring
-
--   **Actions:**
-    -   **Firebase Hosting:** Consider using Firebase Hosting for seamless deployment and integration with other Firebase services, potentially as an alternative or alongside GitHub Pages.
-    -   **Firebase Performance Monitoring:** Integrate for real-time performance analytics of the application.
-    -   **Firebase Crashlytics:** Integrate for real-time crash reporting.
+Our approach will continue to leverage Firebase as a Backend-as-a-Service (BaaS). This minimizes server-side code complexity and provides inherent scalability and security. Key services include:
+-   **Firebase Authentication:** For secure user identity management (**R1**).
+-   **Cloud Firestore:** For flexible, real-time data storage.
+-   **Firebase Cloud Functions:** For executing secure, server-side logic.
+-   **Firestore Security Rules:** For fine-grained, declarative access control (**R2, R5**).
 
 ---
 
+## 🚀 Core Academic Feature Implementation Plan
+
+This section details the implementation of the mandatory privacy and security features required for the project.
+
+### 1. R3: Privacy-Preserving Contact Tracing (Anonymous Tokens)
+
+**Goal:** To trace contacts without storing Personally Identifiable Information (PII) in logs.
+
+-   **Actions:**
+    -   **Anonymous Token Generation:** When a user books a service, a unique, non-identifiable token (e.g., `TKN-AB3F-CD89`) will be generated client-side.
+    -   **Booking Record:** This token will be stored alongside the `clientId`, `providerId`, and `timestamp` in the `/bookings` collection in Firestore. The booking document will **not** contain names or addresses, only user IDs.
+    -   **Data Structure (`/bookings/{bookingId}`):**
+        ```json
+        {
+          "clientId": "user_uid_123",
+          "providerId": "provider_uid_456",
+          "serviceType": "Home Cleaning",
+          "bookingDate": "2025-12-15T10:00:00Z",
+          "status": "confirmed",
+          "contactToken": "TKN-AB3F-CD89"
+        }
+        ```
+
+### 2. R4: Automated Quarantine Enforcement
+
+**Goal:** To automatically disable booking privileges for clients who have been exposed to a service provider who later tests positive.
+
+-   **Actions:**
+    -   **"Report Positive" Feature:** A service provider will have a button in their dashboard to "Report Positive Test."
+    -   **Trigger Cloud Function:** This button will trigger a Firebase Cloud Function (`reportExposure`).
+    -   **Cloud Function Logic (`reportExposure`):**
+        1.  **Verify Caller:** The function will first verify that the caller is an authenticated `service-provider`.
+        2.  **Query Bookings:** It will query the `/bookings` collection to find all bookings associated with the `providerId` within the last 14 days.
+        3.  **Log Exposures:** For each recent booking, it will create a new document in an `/exposures` collection. This document will log the exposure **anonymously**, containing only the client's ID and a timestamp.
+    -   **Data Structure (`/exposures/{exposureId}`):**
+        ```json
+        {
+          "exposedClientId": "user_uid_123",
+          "exposureDate": "2025-12-15",
+          "quarantineStatus": "active"
+        }
+        ```
+    -   **Client-Side Enforcement:** The frontend application (e.g., in `ProtectedRoute.jsx` or a custom hook) will query the `/exposures` collection for the current user's ID. If an `active` quarantine record is found, the UI will display a warning banner and all booking functionality will be disabled.
+
+### 3. R2 & R5: RBAC and Input Validation via Firestore Security Rules
+
+**Goal:** To enforce strict access control and data validation on the server side.
+
+-   **Actions:**
+    -   **Implement Strict Rules:** Write and deploy comprehensive Firestore security rules.
+    -   **Example Rules:**
+        -   **/users/{userId}:** A user can only read/write their own document. An admin can read any user document.
+        -   **/bookings/{bookingId}:** A user can only create a booking for themselves. A user or provider can only read a booking if their UID is in the `clientId` or `providerId` field.
+        -   **/exposures/{exposureId}:** A user can only read an exposure document if their UID matches the `exposedClientId`. Cloud Functions will have privileged write access.
+        -   **Input Validation:** Rules will validate data types, lengths, and formats upon write operations to prevent malformed data (**R5**).
+
+---
+
+## Broader Functional Enhancements
+
+### Admin Dashboard Transformation
+
+-   **Actions:**
+    -   **User Management:** Implement UI to change user roles or disable accounts (via Cloud Functions).
+    -   **Service Request Management:** Add UI to view, filter, and assign service requests.
+    -   **Privacy-Aware Logging View:** The admin dashboard will be able to view the `/exposures` collection to demonstrate that contact tracing logs are successfully being created **without any PII**, fulfilling a key requirement for the project demo.
+
+### All Services Transformation (Bookings & Services)
+
+-   **Actions:**
+    -   **Service Request Forms:** Implement detailed forms for users to request services, which will create documents in the `/bookings` collection as described in the academic plan.
+    -   **Provider & User Views:** Develop UI for providers to see assigned tasks and for users to track the status of their services.
+
+### Assignment-Specific Security Feature Integration
+
+-   **Actions:**
+    -   **Audit Trails:** Use Cloud Functions to log every significant action (e.g., booking created, exposure reported) to an immutable `/audit` collection for administrative review.
+    -   **Data Validation:** In addition to client-side checks, enforce strict data validation within all Cloud Functions before writing to the database.
+
 ## Prioritized Initial Next Steps
 
-1.  **Firebase Database Seeding (Manual):** Manually create initial user data (admin, user, service provider) directly in the Firebase Console (Firestore Database -> `users` collection) to test roles effectively. Ensure `role` field is set correctly.
-2.  **Implement Basic Service Request:** Build out a simple service request form and a corresponding Firestore collection (`bookings`).
-3.  **Refine Firestore Security Rules:** Continuously refine security rules as new features are added, ensuring least privilege access.
+1.  **Implement Anonymous Token Booking:** Modify the booking form to generate and save the `contactToken` with each new booking.
+2.  **Create `reportExposure` Cloud Function:** Set up the Firebase Cloud Functions environment and deploy the `reportExposure` function.
+3.  **Implement "Report Positive" UI:** Add the button to the service provider's dashboard to trigger the function.
+4.  **Implement Client-Side Quarantine Check:** Add the logic to the frontend to check the `/exposures` collection and disable booking functionality if the user is under quarantine.
+5.  **Write and Deploy Firestore Security Rules:** Draft and deploy the security rules for the `/users`, `/bookings`, and `/exposures` collections.

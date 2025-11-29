@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Package, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase'; // Import Firebase auth instance
-import { firebaseLogout, getCurrentUser } from '../utils/auth'; // Our Firebase auth functions
+import { firebaseLogout } from '../utils/auth'; // Our Firebase auth functions
+import { getFirestoreUserProfile } from '../utils/database'; // Function to get user profile from Firestore
 
 export default function Layout({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,18 +12,27 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // This listener handles the real-time authentication state from Firebase.
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      console.log('[Layout Debug] Auth state changed. Firebase user:', firebaseUser);
+      setLoadingUser(true); // Start loading whenever auth state changes.
+
       if (firebaseUser) {
-        // Firebase user is logged in, fetch their full profile from Firestore
-        const profile = await getCurrentUser(); // getCurrentUser fetches from Firestore
+        // If a Firebase user is detected, fetch their full profile from Firestore.
+        // This is more reliable than relying on a separate listener.
+        const profile = await getFirestoreUserProfile(firebaseUser.uid);
+        console.log('[Layout Debug] Fetched user profile:', profile);
         setUser(profile);
       } else {
+        // No user is logged in.
+        console.log('[Layout Debug] No user logged in.');
         setUser(null);
       }
-      setLoadingUser(false);
+      
+      setLoadingUser(false); // Stop loading once the profile is fetched or confirmed null.
     });
 
-    return () => unsubscribe(); // Clean up the listener
+    return () => unsubscribe(); // Clean up the listener on component unmount.
   }, []);
 
   const handleLogout = async () => {
@@ -31,8 +41,9 @@ export default function Layout({ children }) {
   };
 
   if (loadingUser) {
-    // Optionally render a loading state for the layout if needed
-    // return <div>Loading layout...</div>;
+    // While we are determining the auth state and fetching the profile,
+    // it's better to show a neutral or loading state to prevent UI flashing.
+    return <div>Loading User...</div>; // Or a more sophisticated spinner component
   }
 
   return (

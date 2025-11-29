@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to get the role of the requesting user from their profile
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    // Users Collection:
+    match /users/{userId} {
+      // READ: An admin can read any profile. A user can only read their own.
+      allow read: if request.auth != null && 
+                    (request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin');
+      
+      // CREATE: A user can create their own profile during signup.
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+
+      // UPDATE: A user can update their own profile. An admin can update any profile (to change roles).
+      allow update: if request.auth != null &&
+                     (request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin');
+
+      // DELETE: No one can delete user profiles from the client.
+      allow delete: if false;
+    }
+
+    // Bookings Collection:
+    match /bookings/{bookingId} {
+      // READ: Admin, or the client/provider involved in the booking.
+      allow read: if request.auth != null &&
+                   (getUserRole(request.auth.uid) == 'admin' ||
+                    resource.data.clientId == request.auth.uid ||
+                    resource.data.providerId == request.auth.uid);
+
+      // CREATE: Only authenticated 'user' role can create a booking for themselves.
+      allow create: if request.auth != null &&
+                     getUserRole(request.auth.uid) == 'user' &&
+                     request.resource.data.clientId == request.auth.uid;
+
+      // UPDATE: Admin, or the client/provider involved can update (e.g., change status).
+      allow update: if request.auth != null &&
+                     (getUserRole(request.auth.uid) == 'admin' ||
+                      resource.data.clientId == request.auth.uid ||
+                      resource.data.providerId == request.auth.uid);
+      
+      allow delete: if false;
+    }
+
+    // Exposures Collection (for contact tracing):
+    match /exposures/{exposureId} {
+        // READ: Admin, or the user who was exposed.
+        allow read: if request.auth != null && 
+                     (getUserRole(request.auth.uid) == 'admin' ||
+                      resource.data.exposedClientId == request.auth.uid);
+        
+        // WRITE: No one can write directly. This will be handled by a secure Cloud Function.
+        allow write: if false;
+    }
+  }
+}

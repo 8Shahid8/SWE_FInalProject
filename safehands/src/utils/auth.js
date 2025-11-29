@@ -3,13 +3,21 @@ import { getDB, saveDB } from './database';
 
 // A real cryptographic hashing function using the browser's built-in Crypto API
 const securePasswordHash = async (password) => {
+  console.log('  --- Hashing Process ---');
+  console.log('  Raw password received:', password);
   const encoder = new TextEncoder();
   // A "pepper" is a secret value added to the password before hashing.
-  const data = encoder.encode(password + 'a-strong-pepper-for-safehands'); 
+  const pepper = 'a-strong-pepper-for-safehands';
+  const stringToHash = password + pepper;
+  console.log('  String to hash (password + pepper):', stringToHash);
+  const data = encoder.encode(stringToHash);
+  console.log('  Encoded data (Uint8Array):', data); // Log the encoded data
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   // Convert the buffer to a hex string for easy storage
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  console.log('  Generated hashHex:', hashHex);
+  console.log('  -----------------------');
   return hashHex;
 };
 

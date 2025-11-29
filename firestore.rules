@@ -16,9 +16,29 @@ service cloud.firestore {
       // CREATE: A user can create their own profile during signup.
       allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
 
-      // UPDATE: A user can update their own profile. An admin can update any profile (to change roles).
-      allow update: if request.auth != null &&
-                     (request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin');
+      // UPDATE: A user can update their own profile, but with restrictions.
+      allow update: if request.auth != null && (
+        // Condition 1: An admin can update user data (e.g., for role or status changes).
+        getUserRole(request.auth.uid) == 'admin'
+        ||
+        // Condition 2: A user can update their own non-sensitive profile information.
+        // They are not allowed to change their role or their covidStatus via this path.
+        (
+            request.auth.uid == userId &&
+            request.resource.data.role == resource.data.role &&
+            request.resource.data.covidStatus == resource.data.covidStatus
+        )
+        ||
+        // Condition 3: A user can report themselves as 'positive'.
+        // This is a one-way change from 'negative' or null to 'positive'.
+        (
+            request.auth.uid == userId &&
+            (resource.data.covidStatus == null || resource.data.covidStatus == 'negative') &&
+            request.resource.data.covidStatus == 'positive' &&
+            // Ensure no other fields are being maliciously updated at the same time.
+            request.resource.data.role == resource.data.role
+        )
+      );
 
       // DELETE: No one can delete user profiles from the client.
       allow delete: if false;
@@ -47,14 +67,33 @@ service cloud.firestore {
     }
 
     // Exposures Collection (for contact tracing):
-    match /exposures/{exposureId} {
-        // READ: Admin, or the user who was exposed.
+    match /exposures/{userId} {
+        // READ: Only the exposed user or an admin can read the document.
         allow read: if request.auth != null && 
-                     (getUserRole(request.auth.uid) == 'admin' ||
-                      resource.data.exposedClientId == request.auth.uid);
+                     (request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin');
         
-        // WRITE: No one can write directly. This will be handled by a secure Cloud Function.
-        allow write: if false;
+        // CREATE, UPDATE: Only an admin can create or update an exposure record.
+        allow create, update: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+        allow delete: if false;
+    }
+
+    // Exposure Reports (for admin review):
+    match /exposure_reports/{reportId} {
+        // CREATE: A provider can create a report for themselves.
+        allow create: if request.auth != null && request.resource.data.providerId == request.auth.uid;
+        // READ, UPDATE: Only admins can read reports and update their status.
+        allow read, update: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+        allow delete: if false;
+    }
+
+    // Audit Logs Collection (for R7):
+    match /audit_logs/{logId} {
+        // CREATE: Any authenticated user can create a log entry for their own actions.
+        allow create: if request.auth != null;
+
+        // READ, UPDATE, DELETE: Only admins can read or modify the audit trail.
+        allow read, update, delete: if request.auth != null &&
+                                     getUserRole(request.auth.uid) == 'admin';
     }
   }
 }

@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+import { addAuditLog } from './database'; // Import addAuditLog
 
 // --- Firebase Authentication Functions ---
 
@@ -24,6 +25,9 @@ export const firebaseRegister = async (userData) => {
       covidStatus: 'negative',
       uid: user.uid,
     });
+    
+    // R7: Audit Log for Registration
+    await addAuditLog('User Registration', { email: userData.email, role: userData.role || 'user' });
 
     // Optionally update the user's display name in Firebase Auth profile
     // await updateProfile(user, { displayName: userData.name });
@@ -47,6 +51,8 @@ export const firebaseLogin = async (email, password) => {
 
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
+      // R7: Audit Log for Login
+      await addAuditLog('User Login', { email: email, role: userData.role });
       return { success: true, user: { uid: user.uid, email: user.email, role: userData.role } };
     } else {
       // console.warn('User data not found in Firestore for UID:', user.uid);
@@ -61,6 +67,8 @@ export const firebaseLogin = async (email, password) => {
 // Log out the current user
 export const firebaseLogout = async () => {
   try {
+    // R7: Audit Log for Logout
+    await addAuditLog('User Logout');
     await signOut(auth);
     return { success: true };
   } catch (error) {

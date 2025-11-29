@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint, ShoppingCart, Utensils, Clock, CheckCircle } from 'lucide-react'; // Added ShoppingCart, Utensils
 import { getCurrentUser } from '../utils/auth';
-import { onBookingsUpdateForProvider, updateBookingStatus, getFirestoreUserProfile } from '../utils/database';
+import { onBookingsUpdateForProvider, updateBookingStatus, getFirestoreUserProfile, addAuditLog, addExposureReport } from '../utils/database';
 
 // Define the services statically so the sidebar is always present, using specific service names
 const services = [
@@ -33,7 +33,10 @@ const ServiceProviderDashboard = () => {
     if (currentUser && currentUser.uid) {
       setLoading(true);
       
-      const unsubscribe = onBookingsUpdateForProvider(currentUser.uid, (providerBookings) => {
+      const unsubscribe = onBookingsUpdateForProvider(currentUser.uid, async (providerBookings) => {
+        
+        // No longer hydrating with client names here due to security rules.
+        // The userName is already part of the booking data.
         setBookings(providerBookings);
         
         // Calculate overview stats
@@ -61,6 +64,8 @@ const ServiceProviderDashboard = () => {
   const handleStatusChange = async (bookingId, newStatus) => {
     const result = await updateBookingStatus(bookingId, newStatus);
     if (result.success) {
+      // R7: Audit Log for Booking Status Change
+      await addAuditLog('Booking Status Changed', { bookingId, newStatus });
       // The real-time listener will automatically update the UI, 
       // but we can show an alert for immediate feedback.
       alert(`Booking status updated to ${newStatus}`);
@@ -69,9 +74,28 @@ const ServiceProviderDashboard = () => {
     }
   };
 
-  const handleReportPositive = () => {
-    if(window.confirm("Are you sure you want to report a positive test result? This will notify recent clients and is irreversible.")) {
-      alert("You have reported a positive test. Thank you for helping keep the community safe. Recent clients will be notified.");
+  const handleReportPositive = async () => {
+    if(window.confirm("Are you sure you want to report a positive test result? This will create a report for an admin to review.")) {
+      
+      // R7: Log the *attempt* to report, ensuring the action is recorded.
+      await addAuditLog('Positive Test Reported', { providerId: currentUser.uid });
+
+      const reportData = {
+        providerId: currentUser.uid,
+        providerName: currentUser.displayName || currentUser.email, // Corrected from .name to .displayName
+        reportTimestamp: new Date(),
+        status: 'pending'
+      };
+      
+      const result = await addExposureReport(reportData);
+
+      if (result.success) {
+        alert("You have successfully submitted a positive test report. An administrator will review it shortly.");
+      } else {
+        // The attempt was logged, so we just inform the user of the error.
+        alert(`Your action was logged, but there was an error submitting the report: ${result.error}. Please contact an administrator.`);
+        console.error("Failed to create exposure report:", result.error);
+      }
     }
   };
 

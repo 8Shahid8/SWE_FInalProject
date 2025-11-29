@@ -1,5 +1,5 @@
 // safehands/src/utils/database.js
-import { db } from '../firebase'; // Import Firestore instance
+import { db, auth } from '../firebase'; // Import Firestore instance
 import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, onSnapshot } from 'firebase/firestore';
 
 // --- Firestore Interaction Functions ---
@@ -53,6 +53,18 @@ export const updateFirestoreUserRole = async (userId, newRole) => {
   }
 };
 
+// Function to update a user's covid status
+export const updateUserCovidStatus = async (userId, newStatus) => {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    await setDoc(userDocRef, { covidStatus: newStatus }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user covid status:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Real-time listener for a provider's bookings
 export const onBookingsUpdateForProvider = (providerId, callback) => {
   const bookingsCol = collection(db, 'bookings');
@@ -92,4 +104,103 @@ export const updateBookingProvider = async (bookingId, newProviderId) => {
     console.error("Error updating booking provider:", error);
     return { success: false, error: error.message };
   }
+};
+
+// --- R7: Audit Logging ---
+export const addAuditLog = async (action, details = {}) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.warn("Audit log attempted without authenticated user.");
+      return; // Or handle as an error
+    }
+
+    const auditCol = collection(db, 'audit_logs');
+    await addDoc(auditCol, {
+      action: action,
+      userId: user.uid,
+      timestamp: new Date(),
+      details: details
+    });
+  } catch (error) {
+    console.error("Error writing to audit log:", error);
+  }
+};
+
+// Function for providers to report a positive test
+export const addExposureReport = async (reportData) => {
+    try {
+        const reportsCol = collection(db, 'exposure_reports');
+        await addDoc(reportsCol, reportData);
+        return { success: true };
+    } catch (error) {
+        console.error("Error creating exposure report:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Function for admins to get all exposure reports
+export const getExposureReports = async () => {
+  const reportsCol = collection(db, 'exposure_reports');
+  const reportSnapshot = await getDocs(reportsCol);
+  const reportList = reportSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return reportList;
+};
+
+// Function to get recent bookings for a provider (for contact tracing)
+export const getRecentBookingsForProvider = async (providerId) => {
+  const twoWeeksAgo = new Date();
+  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+  const bookingsCol = collection(db, 'bookings');
+  const q = query(bookingsCol, where("providerId", "==", providerId), where("bookingDate", ">=", twoWeeksAgo));
+  const bookingSnapshot = await getDocs(q);
+  const bookingList = bookingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return bookingList;
+};
+
+// Function to create an exposure record for a user
+export const createExposureRecord = async (clientId) => {
+    try {
+        const exposureRef = doc(db, 'exposures', clientId);
+        await setDoc(exposureRef, {
+            status: 'active',
+            exposureDate: new Date(),
+            lastUpdated: new Date(),
+        }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        console.error("Error creating exposure record:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Function to update the status of an exposure report
+export const updateExposureReportStatus = async (reportId, status) => {
+    try {
+        const reportRef = doc(db, 'exposure_reports', reportId);
+        await setDoc(reportRef, { status: status }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating exposure report status:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Real-time listener for a user's exposure status
+export const onExposureUpdateForUser = (userId, callback) => {
+  const exposureDocRef = doc(db, 'exposures', userId);
+
+  const unsubscribe = onSnapshot(exposureDocRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback(docSnap.data());
+    } else {
+      callback(null); // No exposure record found
+    }
+  }, (error) => {
+    console.error("Error listening to exposure status:", error);
+    callback(null);
+  });
+
+  return unsubscribe;
 };

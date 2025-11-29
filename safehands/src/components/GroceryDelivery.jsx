@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, AlertTriangle } from 'lucide-react';
 import { addFirestoreBooking } from '../utils/database';
 import { getCurrentUser } from '../utils/auth';
+import { addAuditLog } from '../utils/database'; // Import addAuditLog
+import { useQuarantine } from '../context/QuarantineContext.jsx'; // Import the quarantine hook
 
 const generateAnonymousToken = () => {
     return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -13,6 +15,7 @@ export default function GroceryDelivery() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [notes, setNotes] = useState('');
+  const { isQuarantined } = useQuarantine(); // Get quarantine status
 
   const addItem = () => {
     if (newItem.name) {
@@ -33,6 +36,10 @@ export default function GroceryDelivery() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isQuarantined) {
+      alert("You cannot book new services while under quarantine.");
+      return;
+    }
     if (items.length === 0) {
       alert('Please add at least one item');
       return;
@@ -64,6 +71,7 @@ export default function GroceryDelivery() {
     const result = await addFirestoreBooking(bookingData);
 
     if (result.success) {
+        await addAuditLog('Booking Created', { bookingId: result.id, serviceType: bookingData.serviceType, clientId: bookingData.clientId });
         alert('Grocery delivery booked successfully!');
         setItems([]);
         setDeliveryAddress('');
@@ -89,121 +97,136 @@ export default function GroceryDelivery() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Add Items Section */}
-            <div className="border rounded-lg p-4">
-              <h2 className="text-lg font-semibold mb-4">Add Items</h2>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  placeholder="Item name"
-                  value={newItem.name}
-                  onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                  className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  value={newItem.quantity}
-                  onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) })}
-                  className="w-20 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                />
-                <select
-                  value={newItem.unit}
-                  onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
-                  className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="kg">kg</option>
-                  <option value="g">g</option>
-                  <option value="L">L</option>
-                  <option value="pcs">pcs</option>
-                </select>
-                <button
-                  type="button"
-                  onClick={addItem}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-                >
-                  <Plus size={20} />
-                </button>
+            <fieldset disabled={isQuarantined} className="space-y-6">
+              {/* Add Items Section */}
+              <div className="border rounded-lg p-4">
+                <h2 className="text-lg font-semibold mb-4">Add Items</h2>
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Item name"
+                    value={newItem.name}
+                    onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-200"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    value={newItem.quantity}
+                    onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) })}
+                    className="w-20 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-200"
+                  />
+                  <select
+                    value={newItem.unit}
+                    onChange={(e) => setNewItem({ ...newItem, unit: e.target.value })}
+                    className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
+                  >
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="L">L</option>
+                    <option value="pcs">pcs</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={addItem}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition disabled:bg-green-300"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
+
+                {/* Items List */}
+                {items.length > 0 && (
+                  <div className="space-y-2">
+                    {items.map(item => (
+                      <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                        <span className="font-medium">{item.name}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className="font-semibold">{item.quantity} {item.unit}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+                          >
+                            <Plus size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            className="p-1 hover:bg-red-100 rounded text-red-600 ml-2 disabled:opacity-50"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Items List */}
-              {items.length > 0 && (
-                <div className="space-y-2">
-                  {items.map(item => (
-                    <div key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                      <span className="font-medium">{item.name}</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="p-1 hover:bg-gray-200 rounded"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="font-semibold">{item.quantity} {item.unit}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="p-1 hover:bg-gray-200 rounded"
-                        >
-                          <Plus size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.id)}
-                          className="p-1 hover:bg-red-100 rounded text-red-600 ml-2"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+              {/* Delivery Details */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">Delivery Address</label>
+                <textarea
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-200"
+                  rows="3"
+                  required
+                  placeholder="Enter your delivery address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Preferred Delivery Date</label>
+                <input
+                  type="date"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-200"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Additional Notes (Optional)</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 disabled:bg-gray-200"
+                  rows="3"
+                  placeholder="Special instructions or preferences"
+                />
+              </div>
+
+              {isQuarantined && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4 rounded-r-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0"><AlertTriangle className="h-5 w-5 text-yellow-400" /></div>
+                    <div className="ml-3">
+                      <p className="text-sm text-yellow-700">
+                        Due to your quarantine status, you cannot book new services.
+                      </p>
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* Delivery Details */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Delivery Address</label>
-              <textarea
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                rows="3"
-                required
-                placeholder="Enter your delivery address"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2">Preferred Delivery Date</label>
-              <input
-                type="date"
-                value={deliveryDate}
-                onChange={(e) => setDeliveryDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold mb-2">Additional Notes (Optional)</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                rows="3"
-                placeholder="Special instructions or preferences"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition"
-            >
-              Book Grocery Delivery
-            </button>
+              <button
+                type="submit"
+                className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Book Grocery Delivery
+              </button>
+            </fieldset>
           </form>
         </div>
       </div>

@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Package, Menu, X } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react'; // Import useContext
+import { Package, Menu, X, AlertTriangle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase'; // Import Firebase auth instance
 import { firebaseLogout } from '../utils/auth'; // Our Firebase auth functions
 import { getFirestoreUserProfile } from '../utils/database'; // Function to get user profile from Firestore
+import { QuarantineContext } from '../context/QuarantineContext'; // Import the context
 
 export default function Layout({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(null); // Local state for the authenticated user profile
   const [loadingUser, setLoadingUser] = useState(true); // Loading state for user profile
+  const { isQuarantined } = useContext(QuarantineContext); // Get quarantine status from context
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,6 +36,33 @@ export default function Layout({ children }) {
 
     return () => unsubscribe(); // Clean up the listener on component unmount.
   }, []);
+
+  // R6: Session Management - Auto-logout after inactivity
+  useEffect(() => {
+    if (!user) return; // Don't run the timer if no user is logged in
+
+    let activityTimeout;
+    const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes for testing. Should be 30 mins in production.
+
+    const resetTimer = () => {
+      clearTimeout(activityTimeout);
+      activityTimeout = setTimeout(() => {
+        alert("You have been logged out due to inactivity.");
+        handleLogout();
+      }, SESSION_TIMEOUT_MS);
+    };
+
+    const activityEvents = ['mousemove', 'keypress', 'click', 'scroll'];
+    activityEvents.forEach(event => window.addEventListener(event, resetTimer));
+
+    resetTimer(); // Initialize timer
+
+    return () => {
+      // Cleanup: remove event listeners and clear timeout
+      clearTimeout(activityTimeout);
+      activityEvents.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [user]); // Rerun this effect if the user logs in or out
 
   const handleLogout = async () => {
     await firebaseLogout();
@@ -141,6 +170,13 @@ export default function Layout({ children }) {
           </div>
         )}
       </nav>
+
+      {isQuarantined && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+          <p className="font-bold flex items-center"><AlertTriangle className="mr-2" />Quarantine Alert</p>
+          <p>You have been identified as a recent contact of a COVID-19 positive individual. For the safety of the community, your ability to book new services has been temporarily disabled.</p>
+        </div>
+      )}
 
       <main className="p-4 md:p-8">
         {children}

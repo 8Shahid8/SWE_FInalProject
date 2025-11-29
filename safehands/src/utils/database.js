@@ -1,56 +1,42 @@
 // safehands/src/utils/database.js
+import { db } from '../firebase'; // Import Firestore instance
+import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where } from 'firebase/firestore';
 
-// Sample data to make the app feel real
-const initialDB = {
-  // Removed versioning for simplicity in this demo.
-  users: [
-    {
-      id: 1,
-      email: 'user@safehands.com',
-      password: 'password', // Plain text for demo
-      role: 'user',
-      covidStatus: 'negative',
-    },
-    {
-      id: 2,
-      email: 'admin@safehands.com',
-      password: 'admin123', // Plain text for demo
-      role: 'admin',
-      covidStatus: 'negative',
-    },
-    {
-      id: 3,
-      email: 'provider@safehands.com',
-      password: 'provider123', // Plain text for demo
-      role: 'service-provider',
-      covidStatus: 'negative',
-    },
-  ],
-  bookings: [
-    { id: 1, userId: 1, service: 'Grocery Delivery', date: '2025-12-10' },
-  ],
-  contactTrace: [
-    { id: 1, userId: 1, location: 'Central Mall', date: '2025-12-09' },
-  ],
+// --- Firestore Interaction Functions ---
+
+// Function to get a single user's profile by UID
+export const getFirestoreUserProfile = async (uid) => {
+  const userDocRef = doc(db, 'users', uid);
+  const userDocSnap = await getDoc(userDocRef);
+  if (userDocSnap.exists()) {
+    return { id: userDocSnap.id, ...userDocSnap.data() };
+  }
+  return null;
 };
 
-// Function to get the database from localStorage
-export const getDB = () => {
-  const db = localStorage.getItem('safehandsDB');
-  return db ? JSON.parse(db) : null;
+// Function to get all users (e.g., for Admin Dashboard)
+export const getFirestoreUsers = async () => {
+  const usersCol = collection(db, 'users');
+  const userSnapshot = await getDocs(usersCol);
+  const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return userList;
 };
 
-// Function to save the database to localStorage
-export const saveDB = (db) => {
-  localStorage.setItem('safehandsDB', JSON.stringify(db));
+// Placeholder for other Firestore interactions (e.g., bookings, contact tracing)
+export const getFirestoreBookings = async () => {
+  const bookingsCol = collection(db, 'bookings');
+  const bookingSnapshot = await getDocs(bookingsCol);
+  const bookingList = bookingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return bookingList;
 };
 
-// Call this function once when your app loads (e.g., in main.jsx)
-export const seedDatabase = () => {
-  if (!getDB()) {
-    console.log('Seeding database with initial data...');
-    saveDB(initialDB);
-  } else {
-    console.log('Database already exists. No re-seeding required.');
+// Function to add a new booking
+export const addFirestoreBooking = async (bookingData) => {
+  try {
+    const bookingsCol = collection(db, 'bookings');
+    const docRef = await addDoc(bookingsCol, bookingData);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    return { success: false, error: error.message };
   }
 };

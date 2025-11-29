@@ -1,36 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Users, Briefcase, Bell, Eye, Edit, PlusCircle, CheckSquare, XSquare, CheckCircle, Clock, LayoutGrid, Menu } from 'lucide-react';
-import ServiceProviderManagement from './ServiceProviderManagement'; // Import the new component
-
-// Mock User Data
-const mockUsers = [
-  { id: '1', name: 'Alice Smith', email: 'alice.smith@example.com', role: 'Admin', status: 'Active' },
-  { id: '2', name: 'Bob Johnson', email: 'bob.johnson@example.com', role: 'Service Provider', status: 'Active' },
-  { id: '3', name: 'Charlie Brown', email: 'charlie.brown@example.com', role: 'User', status: 'Inactive' },
-  { id: '4', name: 'Diana Prince', email: 'diana.prince@example.com', role: 'Admin', status: 'Active' },
-  { id: '5', name: 'Eve Adams', email: 'eve.adams@example.com', role: 'User', status: 'Active' },
-  { id: '6', name: 'Frank White', email: 'frank.white@example.com', role: 'Service Provider', status: 'Suspended' },
-];
-
-// Mock Service Request Data
-const mockServiceRequests = [
-  { id: 'SR001', serviceType: 'Grocery Delivery', userName: 'Bob Johnson', requestDate: '2025-11-25', status: 'Pending', assignedTo: 'Delivery Team' },
-  { id: 'SR002', serviceType: 'Home Cleaning', userName: 'Alice Smith', requestDate: '2025-11-26', status: 'Completed', assignedTo: 'Cleaning Crew A' },
-  { id: 'SR003', serviceType: 'Medication Delivery', userName: 'Charlie Brown', requestDate: '2025-11-26', status: 'In Progress', assignedTo: 'Pharmacy Partner' },
-  { id: 'SR004', serviceType: 'Laundry Service', userName: 'Diana Prince', requestDate: '2025-11-27', status: 'Pending', assignedTo: 'Laundry Hub' },
-  { id: 'SR005', serviceType: 'Covid 19 Testing', userName: 'Eve Adams', requestDate: '2025-11-27', status: 'Cancelled', assignedTo: 'Testing Mobile Unit' },
-];
-
-// Helper functions for DashboardHome calculations
-const getTotalUsers = () => mockUsers.length;
-const getActiveUsers = () => mockUsers.filter(user => user.status === 'Active').length;
-const getTotalServiceRequests = () => mockServiceRequests.length;
-const getPendingServiceRequests = () => mockServiceRequests.filter(req => req.status === 'Pending').length;
-const getCompletedServiceRequests = () => mockServiceRequests.filter(req => req.status === 'Completed').length;
-
+import { getFirestoreUsers, getFirestoreBookings } from '../utils/database'; // Import Firestore functions
+import ServiceProviderManagement from './ServiceProviderManagement'; // Assuming this component exists and needs data
+import { getCurrentUser } from '../utils/auth'; // Import getCurrentUser to display admin email
 
 // DashboardHome component with clickable cards
-const DashboardHome = ({ setActiveTab }) => (
+const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => (
   <div>
     <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -40,19 +15,9 @@ const DashboardHome = ({ setActiveTab }) => (
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Total Users</h3>
-          <p className="text-3xl font-bold text-indigo-600">{getTotalUsers()}</p>
+          <p className="text-3xl font-bold text-indigo-600">{loading ? '...' : usersCount}</p>
         </div>
         <Users size={48} className="text-indigo-400 opacity-50" />
-      </div>
-      <div
-        className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
-        onClick={() => setActiveTab('users')} // Navigate to users tab for Active Users details
-      >
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700">Active Users</h3>
-          <p className="text-3xl font-bold text-green-600">{getActiveUsers()}</p>
-        </div>
-        <Users size={48} className="text-green-400 opacity-50" />
       </div>
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
@@ -60,39 +25,39 @@ const DashboardHome = ({ setActiveTab }) => (
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Total Requests</h3>
-          <p className="text-3xl font-bold text-blue-600">{getTotalServiceRequests()}</p>
+          <p className="text-3xl font-bold text-blue-600">{loading ? '...' : requestsCount}</p>
         </div>
         <Briefcase size={48} className="text-blue-400 opacity-50" />
       </div>
+      {/* Other cards can be updated similarly to use dynamic data */}
+      {/* For now, keeping mock values for other dashboard cards if no Firestore data exists */}
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
-        onClick={() => setActiveTab('requests')} // Navigate to requests tab for Pending Requests details
+        onClick={() => setActiveTab('requests')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Pending Requests</h3>
-          <p className="text-3xl font-bold text-yellow-600">{getPendingServiceRequests()}</p>
+          <p className="text-3xl font-bold text-yellow-600">...</p>
         </div>
         <Clock size={48} className="text-yellow-400 opacity-50" />
       </div>
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
-        onClick={() => setActiveTab('requests')} // Navigate to requests tab for Completed Requests details
+        onClick={() => setActiveTab('requests')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Completed Requests</h3>
-          <p className="text-3xl font-bold text-purple-600">{getCompletedServiceRequests()}</p>
+          <p className="text-3xl font-bold text-purple-600">...</p>
         </div>
         <CheckCircle size={48} className="text-purple-400 opacity-50" />
       </div>
-
-      {/* New Card for Service Providers */} 
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('providers')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Service Providers</h3>
-          <p className="text-3xl font-bold text-orange-600">6</p> {/* Mock count for now */} 
+          <p className="text-3xl font-bold text-orange-600">...</p>
         </div>
         <LayoutGrid size={48} className="text-orange-400 opacity-50" />
       </div>
@@ -100,14 +65,17 @@ const DashboardHome = ({ setActiveTab }) => (
   </div>
 );
 
-const UserManagement = () => {
+const UserManagement = ({ users, loading }) => {
+  if (loading) return <div className="text-center">Loading users...</div>;
+  if (!users || users.length === 0) return <div className="text-center">No users found.</div>;
+
   const handleView = (user) => {
-    alert(`Viewing user: ${user.name}\nEmail: ${user.email}\nRole: ${user.role}`);
+    alert(`Viewing user: ${user.name || user.email}\nEmail: ${user.email}\nRole: ${user.role}`);
     console.log('View user:', user);
   };
 
   const handleEdit = (user) => {
-    alert(`Editing user: ${user.name}\n(Details for editing would go here)`);
+    alert(`Editing user: ${user.name || user.email}\n(Details for editing would go here)`);
     console.log('Edit user:', user);
   };
 
@@ -150,10 +118,10 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {mockUsers.map((user) => (
+            {users.map((user) => (
               <tr key={user.id}>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900">
-                  {user.name}
+                  {user.name || 'N/A'}
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500 truncate">
                   {user.email}
@@ -163,11 +131,11 @@ const UserManagement = () => {
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
-                    user.status === 'Active' ? 'bg-green-100 text-green-800' :
-                    user.status === 'Inactive' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
+                    user.covidStatus === 'positive' ? 'bg-red-100 text-red-800' :
+                    user.covidStatus === 'negative' ? 'bg-green-100 text-green-800' :
+                    'bg-yellow-100 text-yellow-800' // Assuming other status
                   }`}> 
-                    {user.status}
+                    {user.covidStatus}
                   </span>
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
@@ -195,8 +163,16 @@ const UserManagement = () => {
   );
 };
 
-const ServiceRequest = () => {
-  const [requests, setRequests] = useState(mockServiceRequests);
+const ServiceRequest = ({ requests, loading }) => {
+  if (loading) return <div className="text-center">Loading service requests...</div>;
+  if (!requests || requests.length === 0) return <div className="text-center">No service requests found.</div>;
+
+  const [localRequests, setLocalRequests] = useState(requests); // Use local state for updates
+
+  useEffect(() => {
+    setLocalRequests(requests); // Update local state if requests prop changes
+  }, [requests]);
+
 
   const handleViewDetails = (request) => {
     alert(`Viewing request ${request.id}:\nService: ${request.serviceType}\nUser: ${request.userName}\nStatus: ${request.status}`);
@@ -204,14 +180,15 @@ const ServiceRequest = () => {
   };
 
   const handleUpdateStatus = (id, newStatus) => {
-    setRequests(requests.map(req => req.id === id ? { ...req, status: newStatus } : req));
+    // In a real app, this would update Firestore
+    setLocalRequests(localRequests.map(req => req.id === id ? { ...req, status: newStatus } : req));
     alert(`Request ${id} status updated to ${newStatus}`);
     console.log(`Update request ${id} to ${newStatus}`);
   };
 
   const handleAddRequest = () => {
     alert('Adding a new service request (form would appear here)');
-    console.log('Add new service request');
+    console.log('Add new request');
   };
 
   return (
@@ -251,7 +228,7 @@ const ServiceRequest = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {requests.map((request) => (
+            {localRequests.map((request) => (
               <tr key={request.id}>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900">
                   {request.id}
@@ -314,6 +291,28 @@ const ServiceRequest = () => {
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar visibility
+  const [users, setUsers] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedUsers = await getFirestoreUsers();
+        setUsers(fetchedUsers);
+        const fetchedBookings = await getFirestoreBookings();
+        setBookings(fetchedBookings);
+      } catch (err) {
+        console.error("Error fetching admin data:", err);
+        setError("Failed to load admin data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -322,17 +321,22 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <DashboardHome setActiveTab={setActiveTab} />;
+        return <DashboardHome setActiveTab={setActiveTab} usersCount={users.length} requestsCount={bookings.length} loading={loading} />;
       case 'users':
-        return <UserManagement />;
+        return <UserManagement users={users} loading={loading} />;
       case 'requests':
-        return <ServiceRequest />;
+        return <ServiceRequest requests={bookings} loading={loading} />;
       case 'providers':
+        // ServiceProviderManagement component might need to be updated to use Firestore data too
         return <ServiceProviderManagement />;
       default:
-        return <DashboardHome setActiveTab={setActiveTab} />;
+        return <DashboardHome setActiveTab={setActiveTab} usersCount={users.length} requestsCount={bookings.length} loading={loading} />;
     }
   };
+
+  if (loading) return <div className="text-center p-8">Loading Admin Dashboard...</div>;
+  if (error) return <div className="text-center p-8 text-red-600">{error}</div>;
+
 
   return (
     <div className="flex min-h-screen bg-gray-100">

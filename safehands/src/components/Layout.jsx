@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentUser, logout } from '../utils/auth';
+import { auth } from '../firebase'; // Import Firebase auth instance
+import { firebaseLogout, getCurrentUser } from '../utils/auth'; // Our Firebase auth functions
 
 export default function Layout({ children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null); // Local state for the authenticated user profile
+  const [loadingUser, setLoadingUser] = useState(true); // Loading state for user profile
   const navigate = useNavigate();
-  const user = getCurrentUser();
 
-  const handleLogout = () => {
-    logout();
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        // Firebase user is logged in, fetch their full profile from Firestore
+        const profile = await getCurrentUser(); // getCurrentUser fetches from Firestore
+        setUser(profile);
+      } else {
+        setUser(null);
+      }
+      setLoadingUser(false);
+    });
+
+    return () => unsubscribe(); // Clean up the listener
+  }, []);
+
+  const handleLogout = async () => {
+    await firebaseLogout();
     navigate('/login');
   };
+
+  if (loadingUser) {
+    // Optionally render a loading state for the layout if needed
+    // return <div>Loading layout...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">

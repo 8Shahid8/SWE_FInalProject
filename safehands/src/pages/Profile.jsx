@@ -1,17 +1,37 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, MapPin, Phone, Mail, Shield, Calendar, AlertCircle } from 'lucide-react';
-import { getCurrentUser } from '../utils/auth';
-import { getDB, saveDB } from '../utils/database';
+import { auth } from '../firebase'; // Import Firebase auth instance
+import { getFirestoreUserProfile } from '../utils/database'; // Function to get user profile from Firestore
+import { doc, setDoc } from 'firebase/firestore'; // Import setDoc for updating Firestore
+import { db } from '../firebase'; // Import Firestore db instance
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null); // Full user profile from Firestore
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
-    setFormData(currentUser);
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const profile = await getFirestoreUserProfile(user.uid);
+          setUserProfile(profile);
+          setFormData(profile);
+          setLoading(false);
+        } catch (err) {
+          console.error("Error fetching user profile:", err);
+          setError("Failed to load profile.");
+          setLoading(false);
+        }
+      } else {
+        // Not authenticated, should be redirected by ProtectedRoute
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleInputChange = (e) => {
@@ -28,17 +48,24 @@ export default function Profile() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const db = getDB();
-    const userIndex = db.users.findIndex(u => u.id === user.id);
-    if (userIndex > -1) {
-      db.users[userIndex] = { ...db.users[userIndex], ...formData };
-      saveDB(db);
-      sessionStorage.setItem('currentUser', JSON.stringify(db.users[userIndex]));
-      setUser(db.users[userIndex]);
-      setIsEditing(false);
-      alert('Profile updated successfully!');
+    setLoading(true);
+    setError('');
+    try {
+      if (userProfile && userProfile.id) {
+        const userDocRef = doc(db, 'users', userProfile.id);
+        await setDoc(userDocRef, formData, { merge: true }); // Merge to update only changed fields
+        setUserProfile(formData); // Update local state
+        setIsEditing(false);
+        alert('Profile updated successfully!');
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile.");
+      alert('Failed to update profile: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,8 +77,17 @@ export default function Profile() {
     }
   };
 
-  if (!user || !formData) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>;
+  }
+
+  if (!userProfile) {
+    // This case should ideally be handled by ProtectedRoute redirecting to login
+    return <div className="min-h-screen flex items-center justify-center">No user profile found.</div>;
   }
 
   return (
@@ -65,20 +101,21 @@ export default function Profile() {
                 <User size={40} className="text-blue-600" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{user.name || 'User Name'}</h1>
-                <p className="text-blue-100">{user.email || 'user@example.com'}</p>
+                <h1 className="text-2xl font-bold">{userProfile.name || 'User Name'}</h1>
+                <p className="text-blue-100">{userProfile.email || 'user@example.com'}</p>
               </div>
             </div>
           </div>
 
           {/* Quarantine Status Alert */}
-          {user.quarantineStatus === 'active' && (
+          {userProfile.covidStatus === 'positive' && (
             <div className="bg-red-50 border-b border-red-200 p-4 flex items-start gap-3">
               <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
               <div>
                 <p className="text-red-800 font-semibold">Active Quarantine</p>
                 <p className="text-red-700 text-sm">
-                  End Date: {user.quarantineEndDate || 'Not set'}
+                  Your status is positive. Please follow health guidelines.
+                  {/* End Date: {userProfile.quarantineEndDate || 'Not set'} */}
                 </p>
               </div>
             </div>
@@ -96,53 +133,47 @@ export default function Profile() {
                       <User size={20} className="text-gray-600" />
                       <div>
                         <p className="text-sm text-gray-500">Full Name</p>
-                        <p className="font-semibold">{user.name || 'Not set'}</p>
+                        <p className="font-semibold">{userProfile.name || 'Not set'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Phone size={20} className="text-gray-600" />
                       <div>
                         <p className="text-sm text-gray-500">Phone</p>
-                        <p className="font-semibold">{user.phone || 'Not set'}</p>
+                        <p className="font-semibold">{userProfile.phone || 'Not set'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Mail size={20} className="text-gray-600" />
                       <div>
                         <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-semibold">{user.email || 'Not set'}</p>
+                        <p className="font-semibold">{userProfile.email || 'Not set'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <MapPin size={20} className="text-gray-600" />
                       <div>
                         <p className="text-sm text-gray-500">Address</p>
-                        <p className="font-semibold">{user.address || 'Not set'}</p>
+                        <p className="font-semibold">{userProfile.address || 'Not set'}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Quarantine Status */}
+                {/* Quarantine Status - now Covid Status */}
                 <div>
-                  <h2 className="text-xl font-semibold mb-4 text-gray-800">Quarantine Status</h2>
-                  <div className={`p-4 rounded-lg border ${getQuarantineStatusColor(user.quarantineStatus)}`}>
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800">COVID Status</h2>
+                  <div className={`p-4 rounded-lg border ${getQuarantineStatusColor(userProfile.covidStatus)}`}>
                     <div className="flex items-center gap-3 mb-2">
                       <Shield size={20} />
                       <p className="font-semibold text-lg capitalize">
-                        {user.quarantineStatus || 'None'}
+                        {userProfile.covidStatus || 'None'}
                       </p>
                     </div>
-                    {user.quarantineStatus === 'active' && (
+                    {/* Simplified for now, quarantineEndDate was not directly stored on user profile in Firestore */}
+                    {userProfile.covidStatus === 'positive' && (
                       <div className="space-y-1 mt-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar size={16} />
-                          <span>Start: {user.quarantineStartDate}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar size={16} />
-                          <span>End: {user.quarantineEndDate}</span>
-                        </div>
+                        <p className="text-sm">You are advised to self-isolate.</p>
                       </div>
                     )}
                   </div>
@@ -190,6 +221,7 @@ export default function Profile() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     required
+                    disabled // Email usually can't be changed via profile form in Firebase Auth
                   />
                 </div>
 
@@ -206,20 +238,20 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Quarantine Status</label>
+                  <label className="block text-sm font-semibold mb-2">COVID Status</label>
                   <select
-                    name="quarantineStatus"
-                    value={formData.quarantineStatus || 'none'}
+                    name="covidStatus"
+                    value={formData.covidStatus || 'negative'} // Renamed from quarantineStatus
                     onChange={handleQuarantineChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="none">No Quarantine</option>
-                    <option value="active">Active Quarantine</option>
-                    <option value="completed">Completed Quarantine</option>
+                    <option value="negative">Negative</option>
+                    <option value="positive">Positive</option>
                   </select>
                 </div>
 
-                {formData.quarantineStatus === 'active' && (
+                {/* Removed quarantine start/end date logic for simplicity with Firestore */}
+                {/* {formData.quarantineStatus === 'active' && (
                   <>
                     <div>
                       <label className="block text-sm font-semibold mb-2">Start Date</label>
@@ -244,7 +276,7 @@ export default function Profile() {
                       />
                     </div>
                   </>
-                )}
+                )} */}
 
                 <div className="flex gap-3">
                   <button
@@ -257,7 +289,7 @@ export default function Profile() {
                     type="button"
                     onClick={() => {
                       setIsEditing(false);
-                      setFormData(user);
+                      setFormData(userProfile); // Revert to original profile
                     }}
                     className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400 transition"
                   >

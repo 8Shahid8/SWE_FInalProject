@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, CheckCircle, Mail, Lock, User, Phone, MapPin, ArrowRight } from 'lucide-react';
-import { simpleLogin, simpleRegister } from '../utils/auth'; // Updated import
+import { firebaseLogin, firebaseRegister } from '../utils/auth'; // Updated import to Firebase functions
 
 export default function SafeHandsAuth() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function SafeHandsAuth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  // Removed error state
+  // Removed error state, Firebase errors will be caught and alerted
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Sign In Form State
@@ -29,57 +29,58 @@ export default function SafeHandsAuth() {
   });
 
   // Removed password strength logic
-  // const [passwordStrength, setPasswordStrength] = useState('');
-  // const calculatePasswordStrength = (password) => { /* ... */ };
-  // const getPasswordStrengthColor = (strength) => { /* ... */ };
-  
-  const handleSignIn = () => { // Removed async
-    // setError(''); // Removed error state
-    const result = simpleLogin(signInData.email.trim(), signInData.password.trim()); // Use simpleLogin
-    if (result.success) {
-      setShowSuccessToast(true);
-      setTimeout(() => {
-        setShowSuccessToast(false);
-        navigate('/');
-      }, 1500);
-    } else {
-      alert(result.error || 'Invalid credentials'); // Use alert for error
+
+  const handleSignIn = async () => { // Marked as async
+    try {
+      const result = await firebaseLogin(signInData.email.trim(), signInData.password.trim()); // Use firebaseLogin
+      if (result.success) {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          navigate('/');
+        }, 1500);
+      } else {
+        alert(result.error); // Firebase error message
+      }
+    } catch (error) {
+      alert(error.message); // Catch unexpected errors
     }
   };
 
-  const handleSignUp = () => { // Removed async
-    // setError(''); // Removed error state
-    if (signUpData.password !== signUpData.confirmPassword) {
-      alert("Passwords do not match."); // Use alert for error
-      return;
-    }
-    const result = simpleRegister({ // Use simpleRegister
-      email: signUpData.email.trim(),
-      password: signUpData.password.trim(),
-      name: signUpData.name.trim(),
-      phone: signUpData.contactInfo.trim(),
-      address: signUpData.address.trim()
-    });
-    if (result.success) {
-      setShowSuccessToast(true);
-      setTimeout(() => {
-        setShowSuccessToast(false);
-        navigate('/');
-      }, 1500);
-    } else {
-      alert(result.error || 'Registration failed.'); // Use alert for error
+  const handleSignUp = async () => { // Marked as async
+    try {
+      if (signUpData.password !== signUpData.confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+      const result = await firebaseRegister({ // Use firebaseRegister
+        email: signUpData.email.trim(),
+        password: signUpData.password.trim(),
+        name: signUpData.name.trim(),
+        phone: signUpData.contactInfo.trim(),
+        address: signUpData.address.trim(),
+        role: 'user' // Default role for new registrations
+      });
+      if (result.success) {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          navigate('/');
+        }, 1500);
+      } else {
+        alert(result.error); // Firebase error message
+      }
+    } catch (error) {
+      alert(error.message); // Catch unexpected errors
     }
   };
 
-  const handlePasswordChange = (e) => { // Updated to take event
+  const handlePasswordChange = (e) => {
     setSignUpData({ ...signUpData, password: e.target.value });
-    // Removed password strength logic
-    // setPasswordStrength(calculatePasswordStrength(e.target.value));
   };
 
   const handleSwitchPage = (page) => {
     setCurrentPage(page);
-    // setError(''); // Removed error state
     setSignInData({ email: '', password: '' });
     setSignUpData({ name: '', email: '', contactInfo: '', address: '', password: '', confirmPassword: ''});
   }
@@ -129,7 +130,7 @@ export default function SafeHandsAuth() {
                   </h1>
                   <p className="text-gray-600">Welcome back! Please enter your details.</p>
                 </div>
-                {/* {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>} */}{/* Removed error state */}
+                {/* Error messages will now be handled by alert() */}
                 <div className="space-y-6">
                   {/* Email Field */}
                   <div>
@@ -218,7 +219,7 @@ export default function SafeHandsAuth() {
                   </h1>
                   <p className="text-gray-600">Join SafeHands today and get started.</p>
                 </div>
-                {/* {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>} */} {/* Removed error state */}
+                {/* Error messages will now be handled by alert() */}
                 <div className="space-y-5">
                   {/* Name Field */}
                   <div>
@@ -320,7 +321,6 @@ export default function SafeHandsAuth() {
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
-                    {/* Removed password strength logic */}
                   </div>
 
                   {/* Confirm Password Field */}

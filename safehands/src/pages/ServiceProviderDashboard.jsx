@@ -1,12 +1,17 @@
 // safehands/src/pages/ServiceProviderDashboard.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint } from 'lucide-react';
+import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint, ShoppingCart, Utensils } from 'lucide-react'; // Added ShoppingCart, Utensils
 import { getCurrentUser } from '../utils/auth';
 import { onBookingsUpdateForProvider, updateBookingStatus, getFirestoreUserProfile } from '../utils/database';
 
-// Define the services statically so the sidebar is always present
+// Define the services statically so the sidebar is always present, using specific service names
 const services = [
-    { id: 'Delivery Services', name: 'Delivery Services', icon: Package },
+    // Delivery Services Sub-categories
+    { id: 'Grocery Delivery', name: 'Grocery Delivery', icon: ShoppingCart },
+    { id: 'Food Delivery', name: 'Food Delivery', icon: Utensils },
+    { id: 'Parcel Delivery', name: 'Parcel Delivery', icon: Package },
+    
+    // Other Services
     { id: 'Medication Delivery', name: 'Medication Delivery', icon: Truck },
     { id: 'Covid 19 Testing', name: 'Covid 19 Testing', icon: ShieldCheck },
     { id: 'Home Cleaning', name: 'Home Cleaning', icon: Sparkles },
@@ -25,9 +30,13 @@ const ServiceProviderDashboard = () => {
       setLoading(true);
       
       const unsubscribe = onBookingsUpdateForProvider(currentUser.uid, (providerBookings) => {
+        console.log('[SP Dashboard Debug] Raw providerBookings received:', providerBookings); // Debug log
+        
+        // No longer hydrating with client names here due to security rules.
+        // The userName is already part of the booking data.
         setBookings(providerBookings);
         if (providerBookings.length > 0 && !activeTab) {
-          setActiveTab(services[0].id);
+          setActiveTab(services[0].id); // Set active tab if there are bookings and none is selected
         }
         setLoading(false);
       });
@@ -35,6 +44,7 @@ const ServiceProviderDashboard = () => {
       // Return the unsubscribe function for cleanup
       return () => unsubscribe();
     } else {
+        console.log('[SP Dashboard Debug] No current user or UID.'); // Debug log
         setLoading(false); // If no user, stop loading.
     }
   }, [currentUser, activeTab]);
@@ -57,7 +67,9 @@ const ServiceProviderDashboard = () => {
   };
 
   const filteredBookings = useMemo(() => {
-    return bookings.filter(b => b.serviceType === activeTab);
+    const filtered = bookings.filter(b => b.serviceType === activeTab);
+    console.log(`[SP Dashboard Debug] Filtered bookings for tab "${activeTab}":`, filtered); // Debug log
+    return filtered;
   }, [bookings, activeTab]);
 
   if (loading) {

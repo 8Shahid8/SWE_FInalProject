@@ -7,7 +7,7 @@ const securePasswordHash = async (password) => {
   console.log('  Raw password received:', password);
   const encoder = new TextEncoder();
   // A "pepper" is a secret value added to the password before hashing.
-  const pepper = 'a-strong-pepper-for-safehands';
+  const pepper = 'test';
   const stringToHash = password + pepper;
   console.log('  String to hash (password + pepper):', stringToHash);
   const data = encoder.encode(stringToHash);

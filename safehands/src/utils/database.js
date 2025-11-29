@@ -2,26 +2,26 @@
 
 // Sample data to make the app feel real
 const initialDB = {
-  version: 4, // <-- Increment version number to force re-seed
+  version: 5, // <-- Increment version number to force re-seed
   users: [
     {
       id: 1,
       email: 'user@safehands.com',
-      passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // "password"
+      passwordHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', // "password" + "test"
       role: 'user',
       covidStatus: 'negative',
     },
     {
       id: 2,
       email: 'admin@safehands.com',
-      passwordHash: '3a34027438218423e84915b225739e1b5850654be8e05c865778018a164b2848', // "admin123"
+      passwordHash: '4e223c8810c95066444b037305d21098e9c0c169229f3d646b149b819f39e31d', // "admin123" + "test"
       role: 'admin',
       covidStatus: 'negative',
     },
     {
       id: 3,
       email: 'provider@safehands.com',
-      passwordHash: 'e6f3a7434c8922c2069772373333a8d16d41470562e847a984572287f7a26f63', // "provider123"
+      passwordHash: '40b2f15e81f5c6978413b5ef213ae4c896940d9d683dd366914b306b8ed08b49', // "provider123" + "test"
       role: 'service-provider',
       covidStatus: 'negative',
     },

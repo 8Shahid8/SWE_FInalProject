@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Users, Briefcase, Bell, Eye, Edit, CheckCircle, Clock, LayoutGrid, Menu, AlertCircle } from 'lucide-react';
+import { Home, Users, Briefcase, Bell, Eye, Edit, CheckCircle, Clock, LayoutGrid, Menu, AlertCircle, AlertTriangle } from 'lucide-react';
 import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole, updateBookingProvider, addAuditLog, createExposureRecord, updateUserCovidStatus, removeExposureRecord } from '../utils/database'; // Import Firestore functions
 import ServiceProviderManagement from './ServiceProviderManagement';
 import { getCurrentUser } from '../utils/auth';
@@ -197,34 +197,35 @@ const ServiceRequest = ({ requests, loading }) => {
     );
 };
 
-const PositiveStatusReports = ({ users, loading, onUserQuarantined }) => {
-
+const PositiveStatusReports = ({ users, loading, onUpdateUserStatus }) => {
   const handleQuarantineUser = async (user) => {
     if (!window.confirm(`Are you sure you want to quarantine user ${user.name || user.email}? This will restrict their account.`)) {
       return;
     }
-    
-    // 1. Create an exposure record to trigger client-side UI changes
     await createExposureRecord(user.id);
-    
-    // 2. Update the user's status to 'quarantined'
     await updateUserCovidStatus(user.id, 'quarantined');
-    
-    // 3. Log the admin action
     await addAuditLog('User Quarantined by Admin', { targetUserId: user.id });
-
-    // 4. Update the local state via callback
-    onUserQuarantined(user.id);
-
+    onUpdateUserStatus(user.id, 'quarantined');
     alert(`User ${user.name || user.email} has been quarantined.`);
   };
 
+  const handleFreeFromQuarantine = async (user) => {
+    if (!window.confirm(`Are you sure you want to free user ${user.name || user.email} from quarantine?`)) {
+      return;
+    }
+    await removeExposureRecord(user.id);
+    await updateUserCovidStatus(user.id, 'negative');
+    await addAuditLog('User Freed from Quarantine', { targetUserId: user.id });
+    onUpdateUserStatus(user.id, 'negative');
+    alert(`User ${user.name || user.email} has been freed from quarantine.`);
+  };
+
   if (loading) return <div className="text-center">Loading positive status reports...</div>;
-  if (!users || users.length === 0) return <div className="text-center p-6 bg-white rounded-lg shadow">No users have reported a positive status.</div>;
+  if (!users || users.length === 0) return <div className="text-center p-6 bg-white rounded-lg shadow">No users have reported a positive status or are in quarantine.</div>;
   
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Positive Status Reports</h2>
+      <h2 className="text-2xl font-bold mb-4">Positive & Quarantined Users</h2>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -243,17 +244,31 @@ const PositiveStatusReports = ({ users, loading, onUserQuarantined }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.covidStatusReportedAt ? new Date(user.covidStatusReportedAt.seconds * 1000).toLocaleString() : 'N/A'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800'}> 
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    user.covidStatus === 'positive' ? 'bg-yellow-100 text-yellow-800' :
+                    user.covidStatus === 'quarantined' ? 'bg-red-100 text-red-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
                     {user.covidStatus}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => handleQuarantineUser(user)}
-                    className="bg-indigo-600 text-white py-1 px-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
-                  >
-                    Acknowledge & Quarantine
-                  </button>
+                  {user.covidStatus === 'positive' && (
+                    <button
+                      onClick={() => handleQuarantineUser(user)}
+                      className="bg-indigo-600 text-white py-1 px-3 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
+                    >
+                      Acknowledge & Quarantine
+                    </button>
+                  )}
+                  {user.covidStatus === 'quarantined' && (
+                    <button
+                      onClick={() => handleFreeFromQuarantine(user)}
+                      className="bg-green-600 text-white py-1 px-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                    >
+                      Free from Quarantine
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -283,7 +298,7 @@ export default function AdminDashboard() {
         const fetchedUsers = await getFirestoreUsers();
         setUsers(fetchedUsers);
         
-        const positiveUsers = fetchedUsers.filter(u => u.covidStatus === 'positive');
+        const positiveUsers = fetchedUsers.filter(u => u.covidStatus === 'positive' || u.covidStatus === 'quarantined');
         setPositiveStatusUsers(positiveUsers);
 
         const fetchedBookings = await getFirestoreBookings();
@@ -307,15 +322,24 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  const handleUserQuarantined = (quarantinedUserId) => {
-    // Update the main user list to reflect the new 'quarantined' status
+  const handleUserStatusUpdate = (userId, newStatus) => {
+    // Update the main user list
     setUsers(prevUsers => 
-      prevUsers.map(u => u.id === quarantinedUserId ? { ...u, covidStatus: 'quarantined' } : u)
+      prevUsers.map(u => u.id === userId ? { ...u, covidStatus: newStatus } : u)
     );
-    // Remove the user from the 'positive' list as they have been processed
-    setPositiveStatusUsers(prevUsers => 
-      prevUsers.filter(u => u.id !== quarantinedUserId)
-    );
+    
+    // Update the positive/quarantined list
+    if (newStatus === 'negative') {
+      // Remove the user from the positive list if they are now negative
+      setPositiveStatusUsers(prevUsers => 
+        prevUsers.filter(u => u.id !== userId)
+      );
+    } else {
+      // Otherwise, update the status in the positive list
+      setPositiveStatusUsers(prevUsers => 
+        prevUsers.map(u => u.id === userId ? { ...u, covidStatus: newStatus } : u)
+      );
+    }
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -331,7 +355,7 @@ export default function AdminDashboard() {
       case 'providers':
         return <ServiceProviderManagement />;
       case 'positive-reports':
-        return <PositiveStatusReports users={positiveStatusUsers} loading={loading} onUserQuarantined={handleUserQuarantined} />;
+        return <PositiveStatusReports users={positiveStatusUsers} loading={loading} onUpdateUserStatus={handleUserStatusUpdate} />;
       default:
         return <DashboardHome setActiveTab={setActiveTab} usersCount={users.length} requestsCount={bookings.length} loading={loading} />;
     }

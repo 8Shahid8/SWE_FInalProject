@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Sparkles, User, Phone, Home, Calendar, Clock, Bath, Bed } from 'lucide-react';
+import { Sparkles, User, Phone, Home, Calendar, Clock } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+// Utility to generate a simple anonymous token
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function HomeCleaning() {
   const [formData, setFormData] = useState({
@@ -18,21 +25,56 @@ export default function HomeCleaning() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Home Cleaning request submitted!\n' + JSON.stringify(formData, null, 2));
-    console.log('Home Cleaning Request:', formData);
-    // In a real application, this data would be sent to a backend.
-    setFormData({
-      customerName: '',
-      contactNumber: '',
-      address: '',
-      preferredDate: '',
-      preferredTime: '',
-      cleaningType: 'basic',
-      numberOfRooms: 1,
-      notes: ''
-    });
+    const currentUser = getCurrentUser();
+
+    if (!currentUser || !currentUser.uid) {
+      alert('You must be logged in to request a service.');
+      return;
+    }
+
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+    
+    // Combine date and time into a single Date object
+    const bookingDateTime = new Date(`${formData.preferredDate}T${formData.preferredTime}`);
+
+    const bookingData = {
+      clientId: currentUser.uid,
+      userName: currentUser.name || currentUser.email,
+      providerId: DUMMY_PROVIDER_UID,
+      serviceType: 'Home Cleaning',
+      bookingDate: bookingDateTime,
+      contactToken: generateAnonymousToken(),
+      status: 'confirmed',
+      details: {
+        customerName: formData.customerName,
+        contactNumber: formData.contactNumber,
+        address: formData.address,
+        cleaningType: formData.cleaningType,
+        numberOfRooms: formData.numberOfRooms,
+        notes: formData.notes,
+      }
+    };
+    
+    const result = await addFirestoreBooking(bookingData);
+
+    if (result.success) {
+      alert('Home Cleaning request submitted successfully! A service provider will be assigned shortly.');
+      // Reset form
+      setFormData({
+        customerName: '',
+        contactNumber: '',
+        address: '',
+        preferredDate: '',
+        preferredTime: '',
+        cleaningType: 'basic',
+        numberOfRooms: 1,
+        notes: ''
+      });
+    } else {
+      alert(`There was an error submitting your request: ${result.error}`);
+    }
   };
 
   return (

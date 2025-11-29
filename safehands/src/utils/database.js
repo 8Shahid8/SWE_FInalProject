@@ -40,3 +40,41 @@ export const addFirestoreBooking = async (bookingData) => {
     return { success: false, error: error.message };
   }
 };
+
+// Function to update a user's role
+export const updateFirestoreUserRole = async (userId, newRole) => {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    await setDoc(userDocRef, { role: newRole }, { merge: true }); // Merge to update only the role field
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Function to get all bookings for a specific service provider
+export const getFirestoreBookingsForProvider = async (providerId) => {
+  try {
+    const bookingsCol = collection(db, 'bookings');
+    const q = query(bookingsCol, where("providerId", "==", providerId));
+    const bookingSnapshot = await getDocs(q);
+    const bookingList = bookingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return bookingList;
+  } catch (error) {
+    console.error("Error fetching provider bookings:", error);
+    return []; // Return an empty array on error
+  }
+};
+
+// Function to update the status of a booking
+export const updateBookingStatus = async (bookingId, newStatus) => {
+  try {
+    const bookingDocRef = doc(db, 'bookings', bookingId);
+    await setDoc(bookingDocRef, { status: newStatus }, { merge: true });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    return { success: false, error: error.message };
+  }
+};

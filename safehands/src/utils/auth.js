@@ -20,8 +20,6 @@ export const firebaseRegister = async (userData) => {
     await setDoc(doc(db, 'users', user.uid), {
       email: user.email,
       name: userData.name || '',
-      phone: userData.phone || '',
-      address: userData.address || '',
       role: userData.role || 'user', // Default role 'user'
       covidStatus: 'negative',
       uid: user.uid,

@@ -22,10 +22,9 @@ export default function SafeHandsAuth() {
   const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
-    contactInfo: '',
-    address: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user' // Default role
   });
 
   // Removed password strength logic
@@ -37,7 +36,15 @@ export default function SafeHandsAuth() {
         setShowSuccessToast(true);
         setTimeout(() => {
           setShowSuccessToast(false);
-          navigate('/');
+          // Redirect based on role
+          if (result.user.role === 'admin') {
+            navigate('/admin');
+          } else if (result.user.role === 'service-provider') {
+            navigate('/provider-dashboard');
+          }
+          else {
+            navigate('/');
+          }
         }, 1500);
       } else {
         alert(result.error); // Firebase error message
@@ -57,9 +64,7 @@ export default function SafeHandsAuth() {
         email: signUpData.email.trim(),
         password: signUpData.password.trim(),
         name: signUpData.name.trim(),
-        phone: signUpData.contactInfo.trim(),
-        address: signUpData.address.trim(),
-        role: 'user' // Default role for new registrations
+        role: signUpData.role // Pass selected role
       });
       if (result.success) {
         setShowSuccessToast(true);
@@ -82,7 +87,7 @@ export default function SafeHandsAuth() {
   const handleSwitchPage = (page) => {
     setCurrentPage(page);
     setSignInData({ email: '', password: '' });
-    setSignUpData({ name: '', email: '', contactInfo: '', address: '', password: '', confirmPassword: ''});
+    setSignUpData({ name: '', email: '', password: '', confirmPassword: '', role: 'user'});
   }
 
   return (
@@ -259,41 +264,34 @@ export default function SafeHandsAuth() {
                     </div>
                   </div>
 
-                  {/* Contact Info & Address */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Contact Info <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      I am signing up as a: <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center space-x-6">
+                      <label className="inline-flex items-center">
                         <input
-                          type="tel"
-                          name="tel"
-                          autoComplete="tel"
-                          value={signUpData.contactInfo}
-                          onChange={(e) => setSignUpData({ ...signUpData, contactInfo: e.target.value })}
-                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
-                          placeholder="0127123"
+                          type="radio"
+                          name="role"
+                          value="user"
+                          checked={signUpData.role === 'user'}
+                          onChange={(e) => setSignUpData({ ...signUpData, role: e.target.value })}
+                          className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                         />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Address
+                        <span className="ml-2 text-gray-700">Client</span>
                       </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <label className="inline-flex items-center">
                         <input
-                          type="text"
-                          name="street-address"
-                          autoComplete="street-address"
-                          value={signUpData.address}
-                          onChange={(e) => setSignUpData({ ...signUpData, address: e.target.value })}
-                          className="w-full pl-12 pr-4 py-3 bg-indigo-50 border-2 border-indigo-100 rounded-xl hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-all"
-                          placeholder="Street Address, City, Postal Code"
+                          type="radio"
+                          name="role"
+                          value="service-provider"
+                          checked={signUpData.role === 'service-provider'}
+                          onChange={(e) => setSignUpData({ ...signUpData, role: e.target.value })}
+                          className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                         />
-                      </div>
+                        <span className="ml-2 text-gray-700">Service Provider</span>
+                      </label>
                     </div>
                   </div>
 

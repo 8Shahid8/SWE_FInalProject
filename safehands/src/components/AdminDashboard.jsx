@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Users, Briefcase, Bell, Eye, Edit, PlusCircle, CheckSquare, XSquare, CheckCircle, Clock, LayoutGrid, Menu } from 'lucide-react';
-import { getFirestoreUsers, getFirestoreBookings } from '../utils/database'; // Import Firestore functions
+import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole } from '../utils/database'; // Import Firestore functions
 import ServiceProviderManagement from './ServiceProviderManagement'; // Assuming this component exists and needs data
 import { getCurrentUser } from '../utils/auth'; // Import getCurrentUser to display admin email
 
@@ -65,36 +65,36 @@ const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => 
   </div>
 );
 
-const UserManagement = ({ users, loading }) => {
-  if (loading) return <div className="text-center">Loading users...</div>;
-  if (!users || users.length === 0) return <div className="text-center">No users found.</div>;
+const UserManagement = ({ users, setUsers, loading }) => { // setUsers prop added
+  const currentUser = getCurrentUser(); // Get current admin user details
+
+  const handleRoleChange = async (userId, newRole) => {
+    if (!window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
+      return;
+    }
+    const result = await updateFirestoreUserRole(userId, newRole);
+    if (result.success) {
+      // Update local state to reflect the change immediately
+      setUsers(users.map(user => (user.uid === userId ? { ...user, role: newRole } : user)));
+      alert('User role updated successfully!');
+    } else {
+      alert(`Failed to update user role: ${result.error}`);
+    }
+  };
 
   const handleView = (user) => {
     alert(`Viewing user: ${user.name || user.email}\nEmail: ${user.email}\nRole: ${user.role}`);
     console.log('View user:', user);
   };
 
-  const handleEdit = (user) => {
-    alert(`Editing user: ${user.name || user.email}\n(Details for editing would go here)`);
-    console.log('Edit user:', user);
-  };
-
-  const handleAddUser = () => {
-    alert('Adding a new user (form would appear here)');
-    console.log('Add new user');
-  };
+  if (loading) return <div className="text-center">Loading users...</div>;
+  if (!users || users.length === 0) return <div className="text-center">No users found.</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">User Management</h2>
-        <button
-          onClick={handleAddUser}
-          className="bg-indigo-600 text-white sm:px-3 sm:py-1 lg:px-4 lg:py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
-        >
-          <PlusCircle size={18} />
-          <span>Add New User</span>
-        </button>
+        {/* Removed Add New User button as per simplified plan */}
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
@@ -119,7 +119,7 @@ const UserManagement = ({ users, loading }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
-              <tr key={user.id}>
+              <tr key={user.uid}> {/* Use uid as key */}
                 <td className="sm:px-2 lg:px-3 py-4 text-sm font-medium text-gray-900">
                   {user.name || 'N/A'}
                 </td>
@@ -127,7 +127,16 @@ const UserManagement = ({ users, loading }) => {
                   {user.email}
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500">
-                  {user.role}
+                  <select
+                    value={user.role}
+                    onChange={(e) => handleRoleChange(user.uid, e.target.value)}
+                    className="p-1 border rounded-md"
+                    disabled={user.uid === currentUser?.uid} // Disable for current admin user
+                  >
+                    <option value="user">User</option>
+                    <option value="service-provider">Service Provider</option>
+                    <option value="admin">Admin</option>
+                  </select>
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
@@ -141,18 +150,12 @@ const UserManagement = ({ users, loading }) => {
                 <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleView(user)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-3"
+                    className="text-indigo-600 hover:text-indigo-900"
                     title="View User"
                   >
                     <Eye size={18} />
                   </button>
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="text-green-600 hover:text-green-900"
-                    title="Edit User"
-                  >
-                    <Edit size={18} />
-                  </button>
+                  {/* Edit button removed as role change is handled by select */}
                 </td>
               </tr>
             ))}
@@ -195,13 +198,7 @@ const ServiceRequest = ({ requests, loading }) => {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Service Requests</h2>
-        <button
-          onClick={handleAddRequest}
-          className="bg-indigo-600 text-white sm:px-3 sm:py-1 lg:px-4 lg:py-2 rounded-lg hover:bg-indigo-700 transition flex items-center space-x-2"
-        >
-          <PlusCircle size={18} />
-          <span>Add New Request</span>
-        </button>
+        {/* Removed Add New Request button as per simplified plan */}
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
@@ -323,7 +320,7 @@ export default function AdminDashboard() {
       case 'home':
         return <DashboardHome setActiveTab={setActiveTab} usersCount={users.length} requestsCount={bookings.length} loading={loading} />;
       case 'users':
-        return <UserManagement users={users} loading={loading} />;
+        return <UserManagement users={users} setUsers={setUsers} loading={loading} />;
       case 'requests':
         return <ServiceRequest requests={bookings} loading={loading} />;
       case 'providers':

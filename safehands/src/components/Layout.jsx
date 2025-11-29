@@ -53,7 +53,7 @@ export default function Layout({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3 relative z-20">
-              <Link to="/" className="flex items-center space-x-3 focus:outline-none group">
+              <Link to={user && user.role === 'admin' ? '/admin' : (user && user.role === 'service-provider' ? '/provider-dashboard' : '/')} className="flex items-center space-x-3 focus:outline-none group">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200">
                   <Package className="w-6 h-6 text-white" />
                 </div>
@@ -85,22 +85,6 @@ export default function Layout({ children }) {
                   className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
                 >
                   Login/Sign Up
-                </Link>
-              )}
-              {user && user.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
-                >
-                  Admin
-                </Link>
-              )}
-              {user && user.role === 'service-provider' && (
-                <Link
-                  to="/provider-dashboard"
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold px-4 py-2 rounded-lg transition-all duration-200"
-                >
-                  Provider Dashboard
                 </Link>
               )}
               <Link
@@ -145,24 +129,6 @@ export default function Layout({ children }) {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Login/Sign Up
-              </Link>
-            )}
-            {user && user.role === 'admin' && (
-              <Link
-                to="/admin"
-                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin
-              </Link>
-            )}
-            {user && user.role === 'service-provider' && (
-              <Link
-                to="/provider-dashboard"
-                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Provider Dashboard
               </Link>
             )}
             <Link

@@ -5,7 +5,7 @@ import ServiceProviderManagement from './ServiceProviderManagement'; // Assuming
 import { getCurrentUser } from '../utils/auth'; // Import getCurrentUser to display admin email
 
 // DashboardHome component with clickable cards
-const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => (
+const DashboardHome = ({ setActiveTab, usersCount, requestsCount, pendingRequestsCount, completedRequestsCount, serviceProvidersCount, loading }) => (
   <div>
     <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -29,15 +29,13 @@ const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => 
         </div>
         <Briefcase size={48} className="text-blue-400 opacity-50" />
       </div>
-      {/* Other cards can be updated similarly to use dynamic data */}
-      {/* For now, keeping mock values for other dashboard cards if no Firestore data exists */}
       <div
         className="bg-white sm:p-4 lg:p-6 rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow duration-200 flex items-center justify-between"
         onClick={() => setActiveTab('requests')}
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Pending Requests</h3>
-          <p className="text-3xl font-bold text-yellow-600">...</p>
+          <p className="text-3xl font-bold text-yellow-600">{loading ? '...' : pendingRequestsCount}</p>
         </div>
         <Clock size={48} className="text-yellow-400 opacity-50" />
       </div>
@@ -47,7 +45,7 @@ const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => 
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Completed Requests</h3>
-          <p className="text-3xl font-bold text-purple-600">...</p>
+          <p className="text-3xl font-bold text-purple-600">{loading ? '...' : completedRequestsCount}</p>
         </div>
         <CheckCircle size={48} className="text-purple-400 opacity-50" />
       </div>
@@ -57,7 +55,7 @@ const DashboardHome = ({ setActiveTab, usersCount, requestsCount, loading }) => 
       >
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Service Providers</h3>
-          <p className="text-3xl font-bold text-orange-600">...</p>
+          <p className="text-3xl font-bold text-orange-600">{loading ? '...' : serviceProvidersCount}</p>
         </div>
         <LayoutGrid size={48} className="text-orange-400 opacity-50" />
       </div>
@@ -313,6 +311,10 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // New state variables for dashboard overview stats
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [completedRequestsCount, setCompletedRequestsCount] = useState(0);
+  const [serviceProvidersCount, setServiceProvidersCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -321,6 +323,16 @@ export default function AdminDashboard() {
         setUsers(fetchedUsers);
         const fetchedBookings = await getFirestoreBookings();
         setBookings(fetchedBookings);
+
+        // Calculate additional overview stats
+        const pending = fetchedBookings.filter(b => b.status === 'confirmed' || b.status === 'assigned').length;
+        const completed = fetchedBookings.filter(b => b.status === 'completed').length;
+        const providers = fetchedUsers.filter(user => user.role === 'service-provider' || user.role === 'pending-provider').length;
+
+        setPendingRequestsCount(pending);
+        setCompletedRequestsCount(completed);
+        setServiceProvidersCount(providers);
+
       } catch (err) {
         console.error("Error fetching admin data:", err);
         setError("Failed to load admin data.");
@@ -339,7 +351,15 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <DashboardHome setActiveTab={setActiveTab} usersCount={users.length} requestsCount={bookings.length} loading={loading} />;
+        return <DashboardHome
+          setActiveTab={setActiveTab}
+          usersCount={users.length}
+          requestsCount={bookings.length}
+          pendingRequestsCount={pendingRequestsCount}
+          completedRequestsCount={completedRequestsCount}
+          serviceProvidersCount={serviceProvidersCount}
+          loading={loading}
+        />;
       case 'users':
         return <UserManagement users={users} setUsers={setUsers} loading={loading} />;
       case 'requests':

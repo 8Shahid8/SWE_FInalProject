@@ -1,6 +1,6 @@
 // safehands/src/pages/ServiceProviderDashboard.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint, ShoppingCart, Utensils } from 'lucide-react'; // Added ShoppingCart, Utensils
+import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint, ShoppingCart, Utensils, Clock, CheckCircle } from 'lucide-react'; // Added ShoppingCart, Utensils
 import { getCurrentUser } from '../utils/auth';
 import { onBookingsUpdateForProvider, updateBookingStatus, getFirestoreUserProfile } from '../utils/database';
 
@@ -25,16 +25,26 @@ const ServiceProviderDashboard = () => {
   const [activeTab, setActiveTab] = useState(services[0].id); // Default to the first service
   const currentUser = getCurrentUser();
 
+  const [pendingBookingsCount, setPendingBookingsCount] = useState(0);
+  const [inProgressBookingsCount, setInProgressBookingsCount] = useState(0);
+  const [completedBookingsCount, setCompletedBookingsCount] = useState(0);
+
   useEffect(() => {
     if (currentUser && currentUser.uid) {
       setLoading(true);
       
       const unsubscribe = onBookingsUpdateForProvider(currentUser.uid, (providerBookings) => {
-        console.log('[SP Dashboard Debug] Raw providerBookings received:', providerBookings); // Debug log
-        
-        // No longer hydrating with client names here due to security rules.
-        // The userName is already part of the booking data.
         setBookings(providerBookings);
+        
+        // Calculate overview stats
+        const pending = providerBookings.filter(b => b.status === 'confirmed' || b.status === 'assigned' || b.status === 'accepted').length;
+        const inProgress = providerBookings.filter(b => b.status === 'in-progress').length;
+        const completed = providerBookings.filter(b => b.status === 'completed').length;
+        
+        setPendingBookingsCount(pending);
+        setInProgressBookingsCount(inProgress);
+        setCompletedBookingsCount(completed);
+
         if (providerBookings.length > 0 && !activeTab) {
           setActiveTab(services[0].id); // Set active tab if there are bookings and none is selected
         }
@@ -44,7 +54,6 @@ const ServiceProviderDashboard = () => {
       // Return the unsubscribe function for cleanup
       return () => unsubscribe();
     } else {
-        console.log('[SP Dashboard Debug] No current user or UID.'); // Debug log
         setLoading(false); // If no user, stop loading.
     }
   }, [currentUser, activeTab]);
@@ -67,9 +76,7 @@ const ServiceProviderDashboard = () => {
   };
 
   const filteredBookings = useMemo(() => {
-    const filtered = bookings.filter(b => b.serviceType === activeTab);
-    console.log(`[SP Dashboard Debug] Filtered bookings for tab "${activeTab}":`, filtered); // Debug log
-    return filtered;
+    return bookings.filter(b => b.serviceType === activeTab);
   }, [bookings, activeTab]);
 
   if (loading) {
@@ -121,6 +128,32 @@ const ServiceProviderDashboard = () => {
             <span>Report Positive Test</span>
           </button>
         </div>
+
+        {/* Overview Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Pending</h3>
+              <p className="text-3xl font-bold text-yellow-600">{loading ? '...' : pendingBookingsCount}</p>
+            </div>
+            <Clock className="text-yellow-400 opacity-50" size={48} />
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">In Progress</h3>
+              <p className="text-3xl font-bold text-blue-600">{loading ? '...' : inProgressBookingsCount}</p>
+            </div>
+            <Briefcase className="text-blue-400 opacity-50" size={48} />
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700">Completed</h3>
+              <p className="text-3xl font-bold text-green-600">{loading ? '...' : completedBookingsCount}</p>
+            </div>
+            <CheckCircle className="text-green-400 opacity-50" size={48} />
+          </div>
+        </div>
+        {/* End Overview Stats Section */}
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4 flex items-center">

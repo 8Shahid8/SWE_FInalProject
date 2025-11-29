@@ -60,7 +60,6 @@ export const onBookingsUpdateForProvider = (providerId, callback) => {
   
   const unsubscribe = onSnapshot(q, (querySnapshot) => {
     const bookingList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log('[database Debug] onBookingsUpdateForProvider received:', bookingList); // Debug log
     callback(bookingList);
   }, (error) => {
     console.error("Error listening to bookings:", error);

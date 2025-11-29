@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Users, Briefcase, Bell, Eye, Edit, CheckCircle, Clock, LayoutGrid, Menu, AlertCircle } from 'lucide-react';
-import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole, updateBookingProvider, addAuditLog, createExposureRecord, updateUserCovidStatus } from '../utils/database'; // Import Firestore functions
+import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole, updateBookingProvider, addAuditLog, createExposureRecord, updateUserCovidStatus, removeExposureRecord } from '../utils/database'; // Import Firestore functions
 import ServiceProviderManagement from './ServiceProviderManagement';
 import { getCurrentUser } from '../utils/auth';
 
@@ -51,6 +51,21 @@ const UserManagement = ({ users, setUsers, loading }) => {
     }
   };
 
+  const handleFreeFromQuarantine = async (userId) => {
+    if (!window.confirm(`Are you sure you want to free this user from quarantine?`)) {
+      return;
+    }
+    const result = await updateUserCovidStatus(userId, 'negative');
+    if (result.success) {
+      await removeExposureRecord(userId); // Also remove the exposure record
+      await addAuditLog('User Freed from Quarantine', { targetUserId: userId });
+      setUsers(users.map(user => (user.uid === userId ? { ...user, covidStatus: 'negative' } : user)));
+      alert('User has been freed from quarantine.');
+    } else {
+      alert(`Failed to free user from quarantine: ${result.error}`);
+    }
+  };
+
   const handleView = (user) => {
     alert(`Viewing user: ${user.name || user.email}\nEmail: ${user.email}\nRole: ${user.role}`);
   };
@@ -94,6 +109,9 @@ const UserManagement = ({ users, setUsers, loading }) => {
                   </span>
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
+                  {user.covidStatus === 'quarantined' && (
+                    <button onClick={() => handleFreeFromQuarantine(user.uid)} className="text-green-600 hover:text-green-900 mr-2" title="Free from Quarantine"><AlertTriangle size={18} /></button>
+                  )}
                   <button onClick={() => handleView(user)} className="text-indigo-600 hover:text-indigo-900" title="View User"><Eye size={18} /></button>
                 </td>
               </tr>

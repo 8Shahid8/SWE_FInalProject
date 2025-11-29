@@ -1,6 +1,6 @@
 // safehands/src/utils/database.js
 import { db, auth } from '../firebase'; // Import Firestore instance
-import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, onSnapshot, deleteDoc } from 'firebase/firestore';
 
 // --- Firestore Interaction Functions ---
 
@@ -171,6 +171,18 @@ export const createExposureRecord = async (clientId) => {
         return { success: true };
     } catch (error) {
         console.error("Error creating exposure record:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+// Function to remove an exposure record for a user
+export const removeExposureRecord = async (userId) => {
+    try {
+        const exposureRef = doc(db, 'exposures', userId);
+        await deleteDoc(exposureRef);
+        return { success: true };
+    } catch (error) {
+        console.error("Error removing exposure record:", error);
         return { success: false, error: error.message };
     }
 };

@@ -72,9 +72,8 @@ service cloud.firestore {
         allow read: if request.auth != null && 
                      (request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin');
         
-        // CREATE, UPDATE: Only an admin can create or update an exposure record.
-        allow create, update: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
-        allow delete: if false;
+        // CREATE, UPDATE, DELETE: Only an admin can manage exposure records.
+        allow create, update, delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
     }
 
     // Exposure Reports (for admin review):

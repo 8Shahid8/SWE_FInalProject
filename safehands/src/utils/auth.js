@@ -1,93 +1,91 @@
 // safehands/src/utils/auth.js
 import { getDB, saveDB } from './database';
 
-// A real cryptographic hashing function using the browser's built-in Crypto API
-const securePasswordHash = async (password) => {
-  console.log('  --- Hashing Process ---');
-  console.log('  Raw password received:', password);
-  const encoder = new TextEncoder();
-  // A "pepper" is a secret value added to the password before hashing.
-  const pepper = 'test';
-  const stringToHash = password + pepper;
-  console.log('  String to hash (password + pepper):', stringToHash);
-  const data = encoder.encode(stringToHash);
-  console.log('  Encoded data (Uint8Array):', data); // Log the encoded data
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  // Convert the buffer to a hex string for easy storage
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  console.log('  Generated hashHex:', hashHex);
-  console.log('  -----------------------');
-  return hashHex;
-};
+const users = JSON.parse(localStorage.getItem('safehands_users') || '[]'); // This line needs to be updated to use getDB()
+// For now, we will directly modify getDB() in database.js to return initialDB.users for simplicity.
 
-export const mockLogin = async (email, password) => {
-  console.log('--- Login Attempt ---');
-  console.log('Attempting to log in with Email:', email);
-  
-  const db = getDB();
-  // Hash the entered password to compare it with the stored hash
-  const passwordHash = await securePasswordHash(password);
-  console.log('Generated Hash from input password:', passwordHash);
+export const simpleLogin = (email, password) => {
+  const db = getDB(); // Get the entire database including users array
+  const allUsers = db.users; // Access the users array
 
-  console.log('Searching in Users:', db.users);
-
-  const user = db.users.find(
-    (u) => u.email === email && u.passwordHash === passwordHash
-  );
+  // Just check if email and password match exactly
+  const user = allUsers.find(u => u.email === email && u.password === password);
 
   if (user) {
-    console.log('SUCCESS: User found!', user);
-    console.log('---------------------');
-    sessionStorage.setItem('currentUser', JSON.stringify(user));
+    // Create simple session
+    const session = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      loggedIn: true,
+      timestamp: Date.now()
+    };
+    sessionStorage.setItem('currentSession', JSON.stringify(session));
     return { success: true, user };
   }
-  
-  console.log('FAILURE: User not found with matching email and password hash.');
-  console.log('---------------------');
-  return { success: false, error: 'Invalid credentials' };
+  return { success: false, error: 'Invalid email or password' };
 };
 
-export const mockRegister = async (userData) => {
-  const db = getDB();
-  // Await the result of the secure hashing function
-  const passwordHash = await securePasswordHash(userData.password);
+export const simpleRegister = (userData) => {
+  const db = getDB(); // Get the entire database including users array
+  const allUsers = db.users; // Access the users array
 
-  const existingUser = db.users.find(u => u.email === userData.email);
-  if (existingUser) {
+  // Check if user already exists
+  if (allUsers.find(u => u.email === userData.email)) {
     return { success: false, error: 'User with this email already exists.' };
   }
 
   const newUser = {
-    id: Date.now(),
+    id: Date.now(), // Generate a unique ID
     email: userData.email,
-    passwordHash, // Store the new secure hash
+    password: userData.password, // Store plain text for demo
     name: userData.name,
     phone: userData.phone,
     address: userData.address,
-    role: 'user',
+    role: userData.role || 'user', // Default role to 'user'
     covidStatus: 'negative',
   };
 
-  db.users.push(newUser);
-  saveDB(db);
+  allUsers.push(newUser);
+  db.users = allUsers; // Update the users array in the db object
+  saveDB(db); // Save the entire database
 
-  sessionStorage.setItem('currentUser', JSON.stringify(newUser));
+  // Auto-login after registration
+  const session = {
+    userId: newUser.id,
+    email: newUser.email,
+    role: newUser.role,
+    loggedIn: true,
+    timestamp: Date.now()
+  };
+  sessionStorage.setItem('currentSession', JSON.stringify(session));
+
   return { success: true, user: newUser };
 };
 
+export const checkAuth = () => {
+  const session = JSON.parse(sessionStorage.getItem('currentSession') || 'null');
+  return session && session.loggedIn === true;
+};
 
 export const logout = () => {
-  sessionStorage.removeItem('currentUser');
+  sessionStorage.removeItem('currentSession');
 };
 
+// Adapted from old getCurrentUser for the new session structure
 export const getCurrentUser = () => {
-  const user = sessionStorage.getItem('currentUser');
-  return user ? JSON.parse(user) : null;
+  const session = JSON.parse(sessionStorage.getItem('currentSession') || 'null');
+  if (session && session.loggedIn) {
+    // For getting full user data, we need to find it from the main database
+    const db = getDB();
+    const user = db.users.find(u => u.id === session.userId);
+    return user || null;
+  }
+  return null;
 };
 
-// Check if a user is an admin
+// Check if a user is an admin - adapted for new session structure
 export const isAdmin = () => {
-  const user = getCurrentUser();
-  return user && user.role === 'admin';
+  const currentUser = getCurrentUser(); // Get full user data
+  return currentUser && currentUser.role === 'admin';
 };

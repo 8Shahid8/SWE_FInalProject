@@ -2,26 +2,26 @@
 
 // Sample data to make the app feel real
 const initialDB = {
-  version: 5, // <-- Increment version number to force re-seed
+  // Removed versioning for simplicity in this demo.
   users: [
     {
       id: 1,
       email: 'user@safehands.com',
-      passwordHash: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08', // "password" + "test"
+      password: 'password', // Plain text for demo
       role: 'user',
       covidStatus: 'negative',
     },
     {
       id: 2,
       email: 'admin@safehands.com',
-      passwordHash: '4e223c8810c95066444b037305d21098e9c0c169229f3d646b149b819f39e31d', // "admin123" + "test"
+      password: 'admin123', // Plain text for demo
       role: 'admin',
       covidStatus: 'negative',
     },
     {
       id: 3,
       email: 'provider@safehands.com',
-      passwordHash: '40b2f15e81f5c6978413b5ef213ae4c896940d9d683dd366914b306b8ed08b49', // "provider123" + "test"
+      password: 'provider123', // Plain text for demo
       role: 'service-provider',
       covidStatus: 'negative',
     },
@@ -47,10 +47,10 @@ export const saveDB = (db) => {
 
 // Call this function once when your app loads (e.g., in main.jsx)
 export const seedDatabase = () => {
-  console.log('--- Aggressive Database Seeding (TEMP DEBUG MODE) ---');
-  console.log('Clearing old database and re-seeding...');
-  localStorage.removeItem('safehandsDB'); // Aggressively remove old DB
-  saveDB(initialDB);
-  console.log('Database re-seeded with version:', initialDB.version);
-  console.log('----------------------------------------------------');
+  if (!getDB()) {
+    console.log('Seeding database with initial data...');
+    saveDB(initialDB);
+  } else {
+    console.log('Database already exists. No re-seeding required.');
+  }
 };

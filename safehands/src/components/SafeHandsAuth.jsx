@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, CheckCircle, Mail, Lock, User, Phone, MapPin, ArrowRight } from 'lucide-react';
-import { mockLogin, mockRegister } from '../utils/auth';
+import { simpleLogin, simpleRegister } from '../utils/auth'; // Updated import
 
 export default function SafeHandsAuth() {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function SafeHandsAuth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState('');
+  // Removed error state
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Sign In Form State
@@ -28,27 +28,14 @@ export default function SafeHandsAuth() {
     confirmPassword: ''
   });
 
-  const [passwordStrength, setPasswordStrength] = useState('');
-
-  const calculatePasswordStrength = (password) => {
-    if (!password) return '';
-    if (password.length < 4) return 'Weak';
-    if (password.length < 8) return 'Medium';
-    return 'High';
-  };
-
-  const getPasswordStrengthColor = (strength) => {
-    switch (strength) {
-      case 'Weak': return 'bg-red-500';
-      case 'Medium': return 'bg-yellow-500';
-      case 'High': return 'bg-green-500';
-      default: return 'bg-gray-300';
-    }
-  };
+  // Removed password strength logic
+  // const [passwordStrength, setPasswordStrength] = useState('');
+  // const calculatePasswordStrength = (password) => { /* ... */ };
+  // const getPasswordStrengthColor = (strength) => { /* ... */ };
   
-  const handleSignIn = async () => {
-    setError('');
-    const result = await mockLogin(signInData.email.trim(), signInData.password.trim());
+  const handleSignIn = () => { // Removed async
+    // setError(''); // Removed error state
+    const result = simpleLogin(signInData.email.trim(), signInData.password.trim()); // Use simpleLogin
     if (result.success) {
       setShowSuccessToast(true);
       setTimeout(() => {
@@ -56,17 +43,17 @@ export default function SafeHandsAuth() {
         navigate('/');
       }, 1500);
     } else {
-      setError(result.error || 'Invalid credentials');
+      alert(result.error || 'Invalid credentials'); // Use alert for error
     }
   };
 
-  const handleSignUp = async () => {
-    setError('');
+  const handleSignUp = () => { // Removed async
+    // setError(''); // Removed error state
     if (signUpData.password !== signUpData.confirmPassword) {
-      setError("Passwords do not match.");
+      alert("Passwords do not match."); // Use alert for error
       return;
     }
-    const result = await mockRegister({
+    const result = simpleRegister({ // Use simpleRegister
       email: signUpData.email.trim(),
       password: signUpData.password.trim(),
       name: signUpData.name.trim(),
@@ -80,18 +67,19 @@ export default function SafeHandsAuth() {
         navigate('/');
       }, 1500);
     } else {
-      setError(result.error || 'Registration failed.');
+      alert(result.error || 'Registration failed.'); // Use alert for error
     }
   };
 
-  const handlePasswordChange = (value) => {
-    setSignUpData({ ...signUpData, password: value });
-    setPasswordStrength(calculatePasswordStrength(value));
+  const handlePasswordChange = (e) => { // Updated to take event
+    setSignUpData({ ...signUpData, password: e.target.value });
+    // Removed password strength logic
+    // setPasswordStrength(calculatePasswordStrength(e.target.value));
   };
 
   const handleSwitchPage = (page) => {
     setCurrentPage(page);
-    setError('');
+    // setError(''); // Removed error state
     setSignInData({ email: '', password: '' });
     setSignUpData({ name: '', email: '', contactInfo: '', address: '', password: '', confirmPassword: ''});
   }
@@ -141,7 +129,7 @@ export default function SafeHandsAuth() {
                   </h1>
                   <p className="text-gray-600">Welcome back! Please enter your details.</p>
                 </div>
-                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                {/* {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>} */}{/* Removed error state */}
                 <div className="space-y-6">
                   {/* Email Field */}
                   <div>
@@ -230,7 +218,7 @@ export default function SafeHandsAuth() {
                   </h1>
                   <p className="text-gray-600">Join SafeHands today and get started.</p>
                 </div>
-                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                {/* {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>} */} {/* Removed error state */}
                 <div className="space-y-5">
                   {/* Name Field */}
                   <div>
@@ -332,24 +320,7 @@ export default function SafeHandsAuth() {
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
-                    {/* Password Strength Indicator */}
-                    {signUpData.password && (
-                      <div className="mt-2">
-                        <div className="flex space-x-1 mb-1">
-                          {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div
-                              key={i}
-                              className={`h-1 flex-1 rounded-full transition-all ${
-                                i <= (passwordStrength === 'Weak' ? 2 : passwordStrength === 'Medium' ? 4 : 6)
-                                  ? getPasswordStrengthColor(passwordStrength)
-                                  : 'bg-gray-200'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-xs text-gray-600 text-right">{passwordStrength}</p>
-                      </div>
-                    )}
+                    {/* Removed password strength logic */}
                   </div>
 
                   {/* Confirm Password Field */}

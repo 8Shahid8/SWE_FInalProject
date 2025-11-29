@@ -2,7 +2,7 @@
 
 // Sample data to make the app feel real
 const initialDB = {
-  version: 3, // <-- Version number for the database structure
+  version: 4, // <-- Increment version number to force re-seed
   users: [
     {
       id: 1,
@@ -47,16 +47,10 @@ export const saveDB = (db) => {
 
 // Call this function once when your app loads (e.g., in main.jsx)
 export const seedDatabase = () => {
-  const currentDB = getDB();
-  console.log('--- Database Seeding Check ---');
-  console.log('Current DB Version:', currentDB?.version);
-  console.log('Initial DB Version:', initialDB.version);
-
-  if (!currentDB || currentDB.version < initialDB.version) {
-    console.log('DECISION: Seeding database with new version...');
-    saveDB(initialDB);
-  } else {
-    console.log('DECISION: Database is up to date. No seeding required.');
-  }
-  console.log('-----------------------------');
+  console.log('--- Aggressive Database Seeding (TEMP DEBUG MODE) ---');
+  console.log('Clearing old database and re-seeding...');
+  localStorage.removeItem('safehandsDB'); // Aggressively remove old DB
+  saveDB(initialDB);
+  console.log('Database re-seeded with version:', initialDB.version);
+  console.log('----------------------------------------------------');
 };

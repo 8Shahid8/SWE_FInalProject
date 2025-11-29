@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Utensils, User, Phone, Home, Calendar, Clock, CookingPot } from 'lucide-react';
+import { Utensils, User, Phone, Home, Calendar, Clock } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function FoodDelivery() {
   const [formData, setFormData] = useState({
@@ -17,20 +23,50 @@ export default function FoodDelivery() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Food Delivery request submitted!\n' + JSON.stringify(formData, null, 2));
-    console.log('Food Delivery Request:', formData);
-    // In a real application, this data would be sent to a backend.
-    setFormData({
-      customerName: '',
-      contactNumber: '',
-      deliveryAddress: '',
-      preferredDate: '',
-      preferredTime: '',
-      cuisinePreference: 'any',
-      notes: ''
-    });
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to order food delivery.');
+        return;
+    }
+
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+    const bookingDateTime = new Date(`${formData.preferredDate}T${formData.preferredTime}`);
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Food Delivery',
+        bookingDate: bookingDateTime,
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: {
+            customerName: formData.customerName,
+            contactNumber: formData.contactNumber,
+            deliveryAddress: formData.deliveryAddress,
+            cuisinePreference: formData.cuisinePreference,
+            notes: formData.notes,
+        }
+    };
+    
+    const result = await addFirestoreBooking(bookingData);
+
+    if (result.success) {
+        alert('Food delivery order placed successfully!');
+        setFormData({
+            customerName: '',
+            contactNumber: '',
+            deliveryAddress: '',
+            preferredDate: '',
+            preferredTime: '',
+            cuisinePreference: 'any',
+            notes: ''
+        });
+    } else {
+        alert(`Failed to place order: ${result.error}`);
+    }
   };
 
   return (

@@ -1,34 +1,57 @@
 import React, { useState } from 'react';
 import { Truck, Calendar, Home, Pill, User } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function MedicationDelivery() {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     patientName: '',
     medicationName: '',
     quantity: 1,
     deliveryAddress: '',
     deliveryDate: '',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Medication delivery request submitted!\n' + JSON.stringify(formData, null, 2));
-    console.log('Medication Request:', formData);
-    // In a real application, this data would be sent to a backend.
-    setFormData({
-      patientName: '',
-      medicationName: '',
-      quantity: 1,
-      deliveryAddress: '',
-      deliveryDate: '',
-      notes: ''
-    });
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to request a delivery.');
+        return;
+    }
+
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Medication Delivery',
+        bookingDate: new Date(formData.deliveryDate),
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: { ...formData }
+    };
+    
+    const result = await addFirestoreBooking(bookingData);
+
+    if (result.success) {
+        alert('Medication delivery request submitted successfully!');
+        setFormData(initialFormState);
+    } else {
+        alert(`Failed to submit request: ${result.error}`);
+    }
   };
 
   return (

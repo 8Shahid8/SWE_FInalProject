@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Users, Briefcase, Bell, Eye, Edit, PlusCircle, CheckSquare, XSquare, CheckCircle, Clock, LayoutGrid, Menu } from 'lucide-react';
-import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole } from '../utils/database'; // Import Firestore functions
+import { getFirestoreUsers, getFirestoreBookings, updateFirestoreUserRole, updateBookingProvider } from '../utils/database'; // Import Firestore functions
 import ServiceProviderManagement from './ServiceProviderManagement'; // Assuming this component exists and needs data
 import { getCurrentUser } from '../utils/auth'; // Import getCurrentUser to display admin email
 
@@ -167,18 +167,27 @@ const UserManagement = ({ users, setUsers, loading }) => { // setUsers prop adde
 };
 
 const ServiceRequest = ({ requests, loading }) => {
-  if (loading) return <div className="text-center">Loading service requests...</div>;
-  if (!requests || requests.length === 0) return <div className="text-center">No service requests found.</div>;
-
   const [localRequests, setLocalRequests] = useState(requests); // Use local state for updates
+  const [serviceProviders, setServiceProviders] = useState([]);
+  const [loadingProviders, setLoadingProviders] = useState(true);
 
   useEffect(() => {
     setLocalRequests(requests); // Update local state if requests prop changes
   }, [requests]);
 
+  useEffect(() => {
+    const fetchProviders = async () => {
+      setLoadingProviders(true);
+      const users = await getFirestoreUsers();
+      const providers = users.filter(user => user.role === 'service-provider' || user.role === 'pending-provider'); // Include pending providers
+      setServiceProviders(providers);
+      setLoadingProviders(false);
+    };
+    fetchProviders();
+  }, []);
 
   const handleViewDetails = (request) => {
-    alert(`Viewing request ${request.id}:\nService: ${request.serviceType}\nUser: ${request.userName}\nStatus: ${request.status}`);
+    alert(`Viewing request ${request.id}:\nService: ${request.serviceType}\nUser: ${request.userName}\nStatus: ${request.status}\nProvider: ${serviceProviders.find(p => p.uid === request.providerId)?.name || request.providerId || 'Unassigned'}`);
     console.log('View request details:', request);
   };
 
@@ -189,16 +198,27 @@ const ServiceRequest = ({ requests, loading }) => {
     console.log(`Update request ${id} to ${newStatus}`);
   };
 
-  const handleAddRequest = () => {
-    alert('Adding a new service request (form would appear here)');
-    console.log('Add new request');
+  const handleAssignProvider = async (bookingId, newProviderId) => {
+    const providerName = serviceProviders.find(p => p.uid === newProviderId)?.name || newProviderId;
+    if (!window.confirm(`Are you sure you want to assign this booking to ${providerName}?`)) {
+        return;
+    }
+    const result = await updateBookingProvider(bookingId, newProviderId);
+    if (result.success) {
+        setLocalRequests(localRequests.map(req => (req.id === bookingId ? { ...req, providerId: newProviderId, status: 'assigned' } : req)));
+        alert('Provider assigned successfully!');
+    } else {
+        alert(`Failed to assign provider: ${result.error}`);
+    }
   };
+
+  if (loading || loadingProviders) return <div className="text-center">Loading service requests...</div>;
+  if (!localRequests || localRequests.length === 0) return <div className="text-center">No service requests found.</div>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Service Requests</h2>
-        {/* Removed Add New Request button as per simplified plan */}
       </div>
       <div className="bg-white p-6 rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
@@ -207,16 +227,16 @@ const ServiceRequest = ({ requests, loading }) => {
               <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
                 Request ID
               </th>
-              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 Service Type
               </th>
-              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
                 User
               </th>
-              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
-                Request Date
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">
+                Provider
               </th>
-              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/6">
+              <th scope="col" className="sm:px-2 lg:px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/10">
                 Status
               </th>
               <th scope="col" className="sm:px-2 lg:px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
@@ -237,11 +257,28 @@ const ServiceRequest = ({ requests, loading }) => {
                   {request.userName}
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm text-gray-500">
-                  {request.requestDate}
+                    {(request.providerId && request.providerId !== 'DUMMY_PROVIDER_UID_FOR_TESTING' && request.providerId !== 'unassigned') ? (
+                        serviceProviders.find(p => p.uid === request.providerId)?.name || 'Assigned'
+                    ) : (
+                        <select
+                            value={request.providerId === 'DUMMY_PROVIDER_UID_FOR_TESTING' ? 'unassigned' : (request.providerId || 'unassigned')}
+                            onChange={(e) => handleAssignProvider(request.id, e.target.value)}
+                            className="p-1 border rounded-md"
+                            disabled={loadingProviders || request.status !== 'confirmed'} // Only allow assignment if status is 'confirmed'
+                        >
+                            <option value="unassigned">Assign Provider</option>
+                            {serviceProviders.map(provider => (
+                                <option key={provider.uid} value={provider.uid}>
+                                    {provider.name || provider.email}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </td>
                 <td className="sm:px-2 lg:px-3 py-4 text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${ 
-                    request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    request.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                    request.status === 'assigned' ? 'bg-yellow-100 text-yellow-800' : // New status
                     request.status === 'Completed' ? 'bg-green-100 text-green-800' :
                     request.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
                     'bg-gray-100 text-gray-800'
@@ -252,29 +289,12 @@ const ServiceRequest = ({ requests, loading }) => {
                 <td className="sm:px-2 lg:px-3 py-4 text-right text-sm font-medium">
                   <button
                     onClick={() => handleViewDetails(request)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-3"
+                    className="text-indigo-600 hover:text-indigo-900"
                     title="View Details"
                   >
                     <Eye size={18} />
                   </button>
-                  {request.status === 'Pending' && (
-                    <>
-                      <button
-                        onClick={() => handleUpdateStatus(request.id, 'Completed')}
-                        className="text-green-600 hover:text-green-900 mr-3"
-                        title="Mark as Completed"
-                      >
-                        <CheckSquare size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleUpdateStatus(request.id, 'Cancelled')}
-                        className="text-red-600 hover:text-red-900"
-                        title="Mark as Cancelled"
-                      >
-                        <XSquare size={18} />
-                      </button>
-                    </>
-                  )}
+                  {/* Status update buttons could be here if needed */}
                 </td>
               </tr>
             ))}
@@ -284,6 +304,7 @@ const ServiceRequest = ({ requests, loading }) => {
     </div>
   );
 };
+
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('home');

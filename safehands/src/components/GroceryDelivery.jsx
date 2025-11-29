@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function GroceryDelivery() {
   const [items, setItems] = useState([]);
@@ -25,33 +31,47 @@ export default function GroceryDelivery() {
     ));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (items.length === 0) {
       alert('Please add at least one item');
       return;
     }
+    
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to book a delivery.');
+        return;
+    }
 
-    const booking = {
-      id: Date.now(),
-      type: 'grocery',
-      items,
-      deliveryAddress,
-      deliveryDate,
-      notes,
-      status: 'pending',
-      createdAt: new Date().toISOString()
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Grocery Delivery',
+        bookingDate: new Date(deliveryDate),
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: {
+            items,
+            deliveryAddress,
+            notes
+        }
     };
 
-    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    bookings.push(booking);
-    localStorage.setItem('bookings', JSON.stringify(bookings));
+    const result = await addFirestoreBooking(bookingData);
 
-    alert('Grocery delivery booked successfully!');
-    setItems([]);
-    setDeliveryAddress('');
-    setDeliveryDate('');
-    setNotes('');
+    if (result.success) {
+        alert('Grocery delivery booked successfully!');
+        setItems([]);
+        setDeliveryAddress('');
+        setDeliveryDate('');
+        setNotes('');
+    } else {
+        alert(`Failed to book delivery: ${result.error}`);
+    }
   };
 
   return (

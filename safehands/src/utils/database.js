@@ -81,3 +81,15 @@ export const updateBookingStatus = async (bookingId, newStatus) => {
     return { success: false, error: error.message };
   }
 };
+
+// Function to update the provider assigned to a booking
+export const updateBookingProvider = async (bookingId, newProviderId) => {
+  try {
+    const bookingDocRef = doc(db, 'bookings', bookingId);
+    await setDoc(bookingDocRef, { providerId: newProviderId, status: 'assigned' }, { merge: true }); // Also update status to 'assigned'
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating booking provider:", error);
+    return { success: false, error: error.message };
+  }
+};

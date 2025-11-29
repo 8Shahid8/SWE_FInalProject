@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Package, MapPin } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function ParcelDelivery() {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     senderName: '',
     senderPhone: '',
     senderAddress: '',
@@ -18,7 +24,9 @@ export default function ParcelDelivery() {
     specialHandling: [],
     description: '',
     insurance: false
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,56 +45,46 @@ export default function ParcelDelivery() {
 
   const calculateEstimatedCost = () => {
     let baseCost = 5.99;
-
     if (formData.packageType === 'small') baseCost = 8.99;
     if (formData.packageType === 'medium') baseCost = 12.99;
     if (formData.packageType === 'large') baseCost = 19.99;
-
     if (formData.deliverySpeed === 'express') baseCost *= 1.5;
     if (formData.deliverySpeed === 'overnight') baseCost *= 2;
-
     if (formData.insurance) baseCost += 3.99;
-
     return baseCost.toFixed(2);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to book a delivery.');
+        return;
+    }
 
-    const booking = {
-      id: Date.now(),
-      type: 'parcel',
-      ...formData,
-      estimatedCost: calculateEstimatedCost(),
-      status: 'pending',
-      trackingNumber: `TRK${Date.now()}`,
-      createdAt: new Date().toISOString()
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+    const bookingDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime.split('-')[0]}`);
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Parcel Delivery',
+        bookingDate: bookingDateTime,
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: { ...formData, estimatedCost: calculateEstimatedCost() }
     };
 
-    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    bookings.push(booking);
-    localStorage.setItem('bookings', JSON.stringify(bookings));
+    const result = await addFirestoreBooking(bookingData);
 
-    alert(`Parcel delivery booked successfully! Tracking Number: ${booking.trackingNumber}`);
-
-    // Reset form
-    setFormData({
-      senderName: '',
-      senderPhone: '',
-      senderAddress: '',
-      recipientName: '',
-      recipientPhone: '',
-      recipientAddress: '',
-      packageType: 'document',
-      packageWeight: '',
-      packageValue: '',
-      deliverySpeed: 'standard',
-      pickupDate: '',
-      pickupTime: '',
-      specialHandling: [],
-      description: '',
-      insurance: false
-    });
+    if (result.success) {
+        alert(`Parcel delivery booked successfully!`);
+        setFormData(initialFormState);
+    } else {
+        alert(`Failed to book delivery: ${result.error}`);
+    }
   };
 
   const specialHandlingOptions = ['Fragile', 'Keep Upright', 'Keep Dry', 'Temperature Sensitive'];

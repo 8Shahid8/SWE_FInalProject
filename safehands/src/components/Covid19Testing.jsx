@@ -1,34 +1,58 @@
 import React, { useState } from 'react';
-import { ShieldCheck, User, Phone, Calendar, Clock, Home, AlertCircle } from 'lucide-react';
+import { ShieldCheck, User, Phone, Calendar, Clock, Home } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function Covid19Testing() {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     patientName: '',
     contactNumber: '',
     preferredDate: '',
     preferredTime: '',
     testingAddress: '',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('COVID-19 Test request submitted!\n' + JSON.stringify(formData, null, 2));
-    console.log('COVID-19 Test Request:', formData);
-    // In a real application, this data would be sent to a backend.
-    setFormData({
-      patientName: '',
-      contactNumber: '',
-      preferredDate: '',
-      preferredTime: '',
-      testingAddress: '',
-      notes: ''
-    });
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to request a test.');
+        return;
+    }
+
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+    const bookingDateTime = new Date(`${formData.preferredDate}T${formData.preferredTime}`);
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Covid 19 Testing',
+        bookingDate: bookingDateTime,
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: { ...formData }
+    };
+
+    const result = await addFirestoreBooking(bookingData);
+
+    if (result.success) {
+        alert('COVID-19 test request submitted successfully!');
+        setFormData(initialFormState);
+    } else {
+        alert(`Failed to submit request: ${result.error}`);
+    }
   };
 
   return (

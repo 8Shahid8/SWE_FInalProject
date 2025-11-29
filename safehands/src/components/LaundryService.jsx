@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { Shirt, User, Phone, Home, Calendar, Clock, WashingMachine } from 'lucide-react';
+import { addFirestoreBooking } from '../utils/database';
+import { getCurrentUser } from '../utils/auth';
+
+const generateAnonymousToken = () => {
+    return 'TKN-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+};
 
 export default function LaundryService() {
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     customerName: '',
     contactNumber: '',
     pickupAddress: '',
@@ -10,27 +16,44 @@ export default function LaundryService() {
     preferredPickupTime: '',
     serviceType: 'wash-fold',
     notes: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormState);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Laundry Service request submitted!\n' + JSON.stringify(formData, null, 2));
-    console.log('Laundry Service Request:', formData);
-    // In a real application, this data would be sent to a backend.
-    setFormData({
-      customerName: '',
-      contactNumber: '',
-      pickupAddress: '',
-      preferredPickupDate: '',
-      preferredPickupTime: '',
-      serviceType: 'wash-fold',
-      notes: ''
-    });
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('You must be logged in to request a service.');
+        return;
+    }
+
+    const DUMMY_PROVIDER_UID = 'DUMMY_PROVIDER_UID_FOR_TESTING';
+    const bookingDateTime = new Date(`${formData.preferredPickupDate}T${formData.preferredPickupTime}`);
+
+    const bookingData = {
+        clientId: currentUser.uid,
+        userName: currentUser.name || currentUser.email,
+        providerId: DUMMY_PROVIDER_UID,
+        serviceType: 'Laundry Service',
+        bookingDate: bookingDateTime,
+        contactToken: generateAnonymousToken(),
+        status: 'confirmed',
+        details: { ...formData }
+    };
+
+    const result = await addFirestoreBooking(bookingData);
+
+    if (result.success) {
+        alert('Laundry Service request submitted successfully!');
+        setFormData(initialFormState);
+    } else {
+        alert(`Failed to submit request: ${result.error}`);
+    }
   };
 
   return (

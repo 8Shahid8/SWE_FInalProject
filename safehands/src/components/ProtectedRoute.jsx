@@ -19,8 +19,4 @@ const ProtectedRoute = ({ roles }) => {
 
   // 3. If checks pass, render the child component
   return <Outlet />;
-};
 
-export default ProtectedRoute;
-
-export default ProtectedRoute;

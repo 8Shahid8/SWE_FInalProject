@@ -1,6 +1,6 @@
 // safehands/src/utils/database.js
 import { db } from '../firebase'; // Import Firestore instance
-import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, addDoc, query, where, onSnapshot } from 'firebase/firestore';
 
 // --- Firestore Interaction Functions ---
 
@@ -53,19 +53,22 @@ export const updateFirestoreUserRole = async (userId, newRole) => {
   }
 };
 
-// Function to get all bookings for a specific service provider
-export const getFirestoreBookingsForProvider = async (providerId) => {
-  try {
-    const bookingsCol = collection(db, 'bookings');
-    const q = query(bookingsCol, where("providerId", "==", providerId));
-    const bookingSnapshot = await getDocs(q);
-    const bookingList = bookingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return bookingList;
-  } catch (error) {
-    console.error("Error fetching provider bookings:", error);
-    return []; // Return an empty array on error
-  }
+// Real-time listener for a provider's bookings
+export const onBookingsUpdateForProvider = (providerId, callback) => {
+  const bookingsCol = collection(db, 'bookings');
+  const q = query(bookingsCol, where("providerId", "==", providerId));
+  
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const bookingList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(bookingList);
+  }, (error) => {
+    console.error("Error listening to bookings:", error);
+    callback([]); // Send empty array on error
+  });
+
+  return unsubscribe; // Return the unsubscribe function for cleanup
 };
+
 
 // Function to update the status of a booking
 export const updateBookingStatus = async (bookingId, newStatus) => {

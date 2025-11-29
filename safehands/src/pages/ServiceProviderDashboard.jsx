@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Briefcase, AlertTriangle, User, Package, Truck, ShieldCheck, Sparkles, Shirt, PawPrint } from 'lucide-react';
 import { getCurrentUser } from '../utils/auth';
-import { getFirestoreBookingsForProvider, updateBookingStatus, getFirestoreUserProfile } from '../utils/database';
+import { onBookingsUpdateForProvider, updateBookingStatus, getFirestoreUserProfile } from '../utils/database';
 
 // Define the services statically so the sidebar is always present
 const services = [
@@ -22,31 +22,28 @@ const ServiceProviderDashboard = () => {
 
   useEffect(() => {
     if (currentUser && currentUser.uid) {
-      const fetchAndHydrateBookings = async () => {
-        setLoading(true);
-        const providerBookings = await getFirestoreBookingsForProvider(currentUser.uid);
-
-        const hydratedBookings = await Promise.all(
-          providerBookings.map(async (booking) => {
-            if (booking.clientId) {
-              const clientProfile = await getFirestoreUserProfile(booking.clientId);
-              return { ...booking, clientName: clientProfile?.name || 'Unknown Client' };
-            }
-            return { ...booking, clientName: 'Unknown Client' };
-          })
-        );
-
-        setBookings(hydratedBookings);
+      setLoading(true);
+      
+      const unsubscribe = onBookingsUpdateForProvider(currentUser.uid, (providerBookings) => {
+        setBookings(providerBookings);
+        if (providerBookings.length > 0 && !activeTab) {
+          setActiveTab(services[0].id);
+        }
         setLoading(false);
-      };
-      fetchAndHydrateBookings();
+      });
+
+      // Return the unsubscribe function for cleanup
+      return () => unsubscribe();
+    } else {
+        setLoading(false); // If no user, stop loading.
     }
-  }, [currentUser]);
+  }, [currentUser, activeTab]);
 
   const handleStatusChange = async (bookingId, newStatus) => {
     const result = await updateBookingStatus(bookingId, newStatus);
     if (result.success) {
-      setBookings(bookings.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
+      // The real-time listener will automatically update the UI, 
+      // but we can show an alert for immediate feedback.
       alert(`Booking status updated to ${newStatus}`);
     } else {
       alert(`Error updating status: ${result.error}`);
@@ -145,7 +142,7 @@ const ServiceProviderDashboard = () => {
                     <tr key={booking.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                         <User size={16} className="mr-2 text-gray-500" />
-                        {booking.clientName}
+                        {booking.userName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {booking.bookingDate ? new Date(booking.bookingDate.seconds * 1000).toLocaleString() : 'N/A'}
